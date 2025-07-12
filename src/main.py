@@ -3,285 +3,303 @@ from flask_cors import CORS
 import requests
 import json
 from datetime import datetime, timedelta
+import os
 
 app = Flask(__name__)
 CORS(app)
 
-# Configuración de GoManage
-GOMANAGE_BASE_URL = "http://buyled.clonico.es:8181"
-GOMANAGE_USERNAME = "distri"
-GOMANAGE_PASSWORD = "GOtmt%"
-GOMANAGE_AUTH_TOKEN = "AKAAAQAAAAhtb2JpbGVBAACgAAIAAAAHZGlzdHJpAACQAAsAAAAIAAAAAGhdIuoAMAAMAAAAAgAMAKAAGgAAAA9TU09BY2Nlc3NUb2tlbgAAoAANAAAADVJPTEVfUFNDVXNlcgAAoAAPAAAANEQzQzM1OEI5Qzc0MjI3NTQ1MkM5NkZFMzIxRjREMjFCRkUzOEYyMUFBODlELm9lcGFzMQAA0AAQAAAACAAAAABoXTD6ANAAFwAAAAgAAAAAAAAAeADQABsAAAAIAAAAAAAAAHgA0AAcAAAACAAAAAAMwnAPALAAFQAAABBTNG0v02DCpLdqzAJOPicS"
+# Configuración centralizada
+class Config:
+    GOMANAGE_BASE_URL = "http://buyled.clonico.es:8181"
+    GOMANAGE_USERNAME = "distri"
+    GOMANAGE_PASSWORD = "GOtmt%"
+    GOMANAGE_AUTH_TOKEN = "AKAAAQAAAAhtb2JpbGVBAACgAAIAAAAHZGlzdHJpAACQAAsAAAAIAAAAAGhdIuoAMAAMAAAAAgAMAKAAGgAAAA9TU09BY2Nlc3NUb2tlbgAAoAANAAAADVJPTEVfUFNDVXNlcgAAoAAPAAAANEQzQzM1OEI5Qzc0MjI3NTQ1MkM5NkZFMzIxRjREMjFCRkUzOEYyMUFBODlELm9lcGFzMQAA0AAQAAAACAAAAABoXTD6ANAAFwAAAAgAAAAAAAAAeADQABsAAAAIAAAAAAAAAHgA0AAcAAAACAAAAAAMwnAPALAAFQAAABBTNG0v02DCpLdqzAJOPicS"
+    SESSION_TIMEOUT_MINUTES = 25
+    REQUEST_TIMEOUT = 30
+    CACHE_TIMEOUT_MINUTES = 30
 
-# Variables globales para autenticación y cache
-session_id = None
-session_expires = None
-all_customers = []
-all_products = []
-dashboard_data = {}
-
-def authenticate_with_gomanage():
-    """Autenticar con GoManage usando las credenciales reales"""
-    global session_id, session_expires
+# Singleton para gestión de sesión
+class SessionManager:
+    def __init__(self):
+        self.session_id = None
+        self.session_expires = None
+        self.last_auth_attempt = None
+        self.auth_failures = 0
+        self.max_auth_failures = 3
+        
+    def is_session_valid(self):
+        """Verificar si la sesión actual es válida"""
+        if not self.session_id or not self.session_expires:
+            return False
+        return datetime.now() < self.session_expires
     
-    try:
-        # Endpoint de autenticación correcto
-        auth_url = f"{GOMANAGE_BASE_URL}/gomanage/static/auth/j_spring_security_check"
-        
-        # Headers según el ejemplo
-        headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
-        
-        # Datos de autenticación en formato form
-        auth_data = {
-            'j_username': GOMANAGE_USERNAME,
-            'j_password': GOMANAGE_PASSWORD
-        }
-        
-        print(f"🔐 Autenticando con GoManage: {GOMANAGE_USERNAME}")
-        
-        # Realizar login
-        login_response = requests.post(
-            auth_url,
-            headers=headers,
-            data=auth_data,
-            timeout=15,
-            allow_redirects=False
-        )
-        
-        print(f"📊 Respuesta de autenticación: {login_response.status_code}")
-        
-        # Extraer JSESSIONID de las cookies
-        if 'Set-Cookie' in login_response.headers:
-            cookies = login_response.headers['Set-Cookie']
-            for cookie in cookies.split(';'):
-                if 'JSESSIONID' in cookie:
-                    session_id = cookie.split('=')[1].split(';')[0]
-                    session_expires = datetime.now() + timedelta(hours=2)
-                    print(f"✅ Sesión iniciada: {session_id[:20]}...")
-                    return True
-        
-        print("❌ No se pudo obtener JSESSIONID")
-        return False
-        
-    except Exception as e:
-        print(f"❌ Error en autenticación: {str(e)}")
-        return False
-
-def make_authenticated_request(method, url, params=None, json_data=None, timeout=30):
-    """Realizar petición autenticada a GoManage"""
-    global session_id, session_expires
+    def should_retry_auth(self):
+        """Verificar si podemos intentar autenticar de nuevo"""
+        if self.auth_failures >= self.max_auth_failures:
+            if self.last_auth_attempt:
+                time_since_last = datetime.now() - self.last_auth_attempt
+                if time_since_last.total_seconds() < 300:  # 5 minutos
+                    return False
+            self.auth_failures = 0  # Reset después de 5 minutos
+        return True
     
-    # Verificar si necesitamos autenticar
-    if not session_id or (session_expires and datetime.now() > session_expires):
-        print("🔄 Renovando autenticación...")
-        if not authenticate_with_gomanage():
+    def authenticate(self):
+        """Autenticar con GoManage"""
+        if not self.should_retry_auth():
+            print("❌ Demasiados intentos de autenticación fallidos")
+            return False
+            
+        try:
+            print(f"🔐 Autenticando con GoManage...")
+            
+            auth_url = f"{Config.GOMANAGE_BASE_URL}/gomanage/static/auth/j_spring_security_check"
+            
+            headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'User-Agent': 'GoManage-Client/1.0'
+            }
+            
+            auth_data = {
+                'j_username': Config.GOMANAGE_USERNAME,
+                'j_password': Config.GOMANAGE_PASSWORD
+            }
+            
+            response = requests.post(
+                auth_url,
+                headers=headers,
+                data=auth_data,
+                timeout=Config.REQUEST_TIMEOUT,
+                allow_redirects=False
+            )
+            
+            print(f"📊 Respuesta de autenticación: {response.status_code}")
+            
+            if response.status_code == 200 and 'Set-Cookie' in response.headers:
+                cookies = response.headers['Set-Cookie']
+                for cookie in cookies.split(';'):
+                    if 'JSESSIONID' in cookie:
+                        self.session_id = cookie.split('=')[1].split(';')[0]
+                        self.session_expires = datetime.now() + timedelta(minutes=Config.SESSION_TIMEOUT_MINUTES)
+                        self.auth_failures = 0
+                        print(f"✅ Sesión iniciada: {self.session_id[:20]}...")
+                        return True
+            
+            self.auth_failures += 1
+            self.last_auth_attempt = datetime.now()
+            print(f"❌ Fallo de autenticación #{self.auth_failures}")
+            return False
+            
+        except requests.exceptions.Timeout:
+            print("⏰ Timeout en autenticación")
+            self.auth_failures += 1
+            self.last_auth_attempt = datetime.now()
+            return False
+        except requests.exceptions.ConnectionError:
+            print("🔌 Error de conexión con GoManage")
+            self.auth_failures += 1
+            self.last_auth_attempt = datetime.now()
+            return False
+        except Exception as e:
+            print(f"❌ Error inesperado en autenticación: {str(e)}")
+            self.auth_failures += 1
+            self.last_auth_attempt = datetime.now()
+            return False
+    
+    def get_auth_headers(self):
+        """Obtener headers de autenticación"""
+        if not self.session_id:
             return None
-    
-    try:
-        headers = {
-            'cookie': f"JSESSIONID={session_id}",
-            'Authorization': f"oecp {GOMANAGE_AUTH_TOKEN}",
-            'Accept': 'application/json'
+            
+        return {
+            'Cookie': f"JSESSIONID={self.session_id}",
+            'Authorization': f"oecp {Config.GOMANAGE_AUTH_TOKEN}",
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'User-Agent': 'GoManage-Client/1.0'
         }
-        
-        if json_data:
-            headers['Content-Type'] = 'application/json'
-        
-        if method.upper() == 'GET':
-            response = requests.get(url, headers=headers, params=params, timeout=timeout)
-        elif method.upper() == 'POST':
-            response = requests.post(url, headers=headers, params=params, json=json_data, timeout=timeout)
-        else:
-            raise ValueError(f"Método HTTP no soportado: {method}")
-        
-        return response
-        
-    except Exception as e:
-        print(f"❌ Error en petición autenticada: {str(e)}")
-        return None
 
-def load_all_customers():
-    """Cargar todos los clientes desde GoManage con paginación mejorada"""
-    global all_customers
-    
-    try:
-        if all_customers:  # Si ya están cargados, no recargar
-            print(f"✅ Clientes ya cargados: {len(all_customers)}")
-            return True
-        
-        print("🔄 Cargando todos los clientes desde GoManage...")
-        
-        # Hacer primera llamada para obtener total
-        response = make_authenticated_request(
-            'GET',
-            f"{GOMANAGE_BASE_URL}/gomanage/web/data/apitmt-customers/List",
-            timeout=30
-        )
-        
-        if not response or response.status_code != 200:
-            print(f"❌ Error cargando clientes: {response.status_code if response else 'No response'}")
-            return False
-        
-        data = response.json()
-        total_entries = data.get('total_entries', 0)
-        print(f"📊 Total clientes disponibles: {total_entries}")
-        
-        # Cargar todos los clientes en lotes más grandes
-        all_customers = []
-        page_size = 500  # Aumentar tamaño de página para cargar más rápido
-        total_pages = (total_entries + page_size - 1) // page_size
-        
-        for page in range(1, total_pages + 1):
-            print(f"📄 Cargando página {page}/{total_pages}...")
-            
-            page_response = make_authenticated_request(
-                'GET',
-                f"{GOMANAGE_BASE_URL}/gomanage/web/data/apitmt-customers/List",
-                params={'page': page, 'size': page_size},
-                timeout=30
-            )
-            
-            if page_response and page_response.status_code == 200:
-                page_data = page_response.json()
-                page_entries = page_data.get('page_entries', [])
-                all_customers.extend(page_entries)
-                print(f"✅ Cargados {len(page_entries)} clientes de página {page}")
-            else:
-                print(f"❌ Error en página {page}")
-                break
-        
-        print(f"✅ TOTAL CARGADO: {len(all_customers)} clientes")
-        return True
-        
-    except Exception as e:
-        print(f"❌ Error cargando todos los clientes: {str(e)}")
-        return False
+# Instancia global del gestor de sesión
+session_manager = SessionManager()
 
-def load_all_products():
-    """Cargar todos los productos desde GoManage con paginación"""
-    global all_products
+# Cache mejorado con TTL
+class DataCache:
+    def __init__(self):
+        self.cache = {}
+        self.cache_timestamps = {}
     
-    try:
-        if all_products:  # Si ya están cargados, no recargar
-            print(f"✅ Productos ya cargados: {len(all_products)}")
-            return True
-        
-        print("🔄 Cargando todos los productos desde GoManage...")
-        
-        # Hacer primera llamada para obtener total
-        response = make_authenticated_request(
-            'GET',
-            f"{GOMANAGE_BASE_URL}/gomanage/web/data/apitmt-products/List",
-            timeout=30
-        )
-        
-        if not response or response.status_code != 200:
-            print(f"❌ Error cargando productos: {response.status_code if response else 'No response'}")
-            return False
-        
-        data = response.json()
-        total_entries = data.get('total_entries', 0)
-        print(f"📊 Total productos disponibles: {total_entries}")
-        
-        # Cargar todos los productos en lotes
-        all_products = []
-        page_size = 500  # Tamaño de página
-        total_pages = (total_entries + page_size - 1) // page_size
-        
-        for page in range(1, total_pages + 1):
-            print(f"📄 Cargando página {page}/{total_pages}...")
+    def get(self, key):
+        """Obtener datos del cache si no han expirado"""
+        if key not in self.cache:
+            return None
             
-            page_response = make_authenticated_request(
-                'GET',
-                f"{GOMANAGE_BASE_URL}/gomanage/web/data/apitmt-products/List",
-                params={'page': page, 'size': page_size},
-                timeout=30
-            )
+        timestamp = self.cache_timestamps.get(key)
+        if not timestamp:
+            return None
             
-            if page_response and page_response.status_code == 200:
-                page_data = page_response.json()
-                page_entries = page_data.get('page_entries', [])
-                all_products.extend(page_entries)
-                print(f"✅ Cargados {len(page_entries)} productos de página {page}")
+        if datetime.now() - timestamp > timedelta(minutes=Config.CACHE_TIMEOUT_MINUTES):
+            self.invalidate(key)
+            return None
+            
+        return self.cache[key]
+    
+    def set(self, key, value):
+        """Guardar datos en cache"""
+        self.cache[key] = value
+        self.cache_timestamps[key] = datetime.now()
+    
+    def invalidate(self, key):
+        """Invalidar entrada del cache"""
+        self.cache.pop(key, None)
+        self.cache_timestamps.pop(key, None)
+    
+    def clear(self):
+        """Limpiar todo el cache"""
+        self.cache.clear()
+        self.cache_timestamps.clear()
+
+# Instancia global del cache
+data_cache = DataCache()
+
+def make_authenticated_request(method, url, **kwargs):
+    """Realizar petición autenticada con reintentos automáticos"""
+    max_retries = 2
+    
+    for attempt in range(max_retries):
+        # Verificar/renovar sesión
+        if not session_manager.is_session_valid():
+            if not session_manager.authenticate():
+                return None
+        
+        # Obtener headers de autenticación
+        headers = session_manager.get_auth_headers()
+        if not headers:
+            continue
+            
+        # Combinar headers
+        if 'headers' in kwargs:
+            headers.update(kwargs['headers'])
+        kwargs['headers'] = headers
+        kwargs['timeout'] = kwargs.get('timeout', Config.REQUEST_TIMEOUT)
+        
+        try:
+            if method.upper() == 'GET':
+                response = requests.get(url, **kwargs)
+            elif method.upper() == 'POST':
+                response = requests.post(url, **kwargs)
             else:
-                print(f"❌ Error en página {page}")
-                break
-        
-        print(f"✅ TOTAL CARGADO: {len(all_products)} productos")
-        return True
-        
-    except Exception as e:
-        print(f"❌ Error cargando todos los productos: {str(e)}")
-        return False
+                raise ValueError(f"Método HTTP no soportado: {method}")
+            
+            # Verificar respuesta exitosa
+            if response.status_code == 200:
+                return response
+            
+            # Si es error de autenticación, invalidar sesión e intentar de nuevo
+            if response.status_code in [401, 403] and attempt < max_retries - 1:
+                print(f"🔄 Error {response.status_code}, renovando sesión...")
+                session_manager.session_id = None
+                continue
+            
+            print(f"❌ Error HTTP {response.status_code}: {response.text[:200]}")
+            return response
+            
+        except requests.exceptions.Timeout:
+            print(f"⏰ Timeout en intento {attempt + 1}")
+            if attempt < max_retries - 1:
+                continue
+        except requests.exceptions.ConnectionError:
+            print(f"🔌 Error de conexión en intento {attempt + 1}")
+            if attempt < max_retries - 1:
+                continue
+        except Exception as e:
+            print(f"❌ Error inesperado: {str(e)}")
+            if attempt < max_retries - 1:
+                continue
+    
+    return None
+
+# ============================================================================
+# RUTAS PRINCIPALES
+# ============================================================================
 
 @app.route('/')
 def index():
-    """Página principal"""
-    return render_template('index_improved.html')
+    """Página principal - ÚNICA RUTA"""
+    return render_template('index_unified.html')
+
+@app.route('/health')
+def health_check():
+    """Health check para monitoreo"""
+    return jsonify({
+        'status': 'healthy',
+        'timestamp': datetime.now().isoformat(),
+        'session_valid': session_manager.is_session_valid(),
+        'cache_entries': len(data_cache.cache)
+    })
+
+# ============================================================================
+# API ENDPOINTS
+# ============================================================================
 
 @app.route('/api/auth', methods=['POST'])
-def auth():
-    """Endpoint de autenticación"""
+def authenticate():
+    """Endpoint de autenticación manual"""
     try:
-        success = authenticate_with_gomanage()
+        success = session_manager.authenticate()
         
         if success:
-            # Cargar datos iniciales
-            load_all_customers()
-            load_all_products()
-            
             return jsonify({
                 "status": "success",
                 "message": "Autenticación exitosa",
-                "session_id": session_id[:20] + "..." if session_id else None,
-                "customers_loaded": len(all_customers),
-                "products_loaded": len(all_products)
+                "session_valid": True,
+                "expires_in": int((session_manager.session_expires - datetime.now()).total_seconds())
             })
         else:
             return jsonify({
                 "status": "error",
-                "message": "Error de autenticación"
+                "message": "Error de autenticación con GoManage",
+                "session_valid": False,
+                "retry_after": 300 if session_manager.auth_failures >= session_manager.max_auth_failures else 0
             }), 401
             
     except Exception as e:
-        print(f"❌ Error en auth: {str(e)}")
         return jsonify({
             "status": "error",
-            "message": f"Error interno: {str(e)}"
+            "message": f"Error interno: {str(e)}",
+            "session_valid": False
         }), 500
 
 @app.route('/api/customers', methods=['GET'])
 def get_customers():
-    """Obtener lista de clientes con búsqueda y paginación mejorada"""
+    """Obtener lista de clientes con cache inteligente"""
     try:
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('per_page', 50))
         search = request.args.get('search', '').strip().lower()
         
-        # Asegurar que los clientes estén cargados
-        if not all_customers:
-            load_all_customers()
+        # Intentar obtener del cache
+        cache_key = 'all_customers'
+        all_customers = data_cache.get(cache_key)
         
-        # Aplicar filtro de búsqueda si se proporciona
+        if not all_customers:
+            print("📥 Cargando clientes desde GoManage...")
+            all_customers = load_customers_from_api()
+            if all_customers is not None:
+                data_cache.set(cache_key, all_customers)
+            else:
+                return jsonify({
+                    "status": "error",
+                    "message": "Error cargando clientes desde GoManage"
+                }), 500
+        
+        # Aplicar filtro de búsqueda
         filtered_customers = all_customers
         if search:
-            filtered_customers = []
-            for customer in all_customers:
-                # Buscar en múltiples campos
-                search_fields = [
-                    str(customer.get('business_name', '')).lower(),
-                    str(customer.get('name', '')).lower(),
-                    str(customer.get('vat_number', '')).lower(),
-                    str(customer.get('code', '')).lower(),
-                    str(customer.get('email', '')).lower(),
-                    str(customer.get('city', '')).lower()
-                ]
-                
-                if any(search in field for field in search_fields):
-                    filtered_customers.append(customer)
+            filtered_customers = [
+                customer for customer in all_customers
+                if any(search in str(customer.get(field, '')).lower() 
+                      for field in ['business_name', 'name', 'vat_number', 'email', 'city'])
+            ]
         
         # Aplicar paginación
         total = len(filtered_customers)
@@ -297,29 +315,61 @@ def get_customers():
                 "per_page": per_page,
                 "total": total,
                 "pages": (total + per_page - 1) // per_page
-            }
+            },
+            "cached": True
         })
         
     except Exception as e:
         print(f"❌ Error en get_customers: {str(e)}")
         return jsonify({
             "status": "error",
-            "message": f"Error cargando clientes: {str(e)}"
+            "message": f"Error interno: {str(e)}"
         }), 500
+
+def load_customers_from_api():
+    """Cargar todos los clientes desde la API con paginación"""
+    try:
+        all_customers = []
+        page = 1
+        page_size = 500
+        
+        while True:
+            response = make_authenticated_request(
+                'GET',
+                f"{Config.GOMANAGE_BASE_URL}/gomanage/web/data/apitmt-customers/List",
+                params={'page': page, 'size': page_size}
+            )
+            
+            if not response or response.status_code != 200:
+                if page == 1:  # Si falla la primera página, es un error
+                    return None
+                break  # Si falla una página posterior, devolver lo que tenemos
+            
+            data = response.json()
+            page_entries = data.get('page_entries', [])
+            
+            if not page_entries:
+                break
+                
+            all_customers.extend(page_entries)
+            print(f"📄 Cargada página {page}: {len(page_entries)} clientes")
+            
+            if len(page_entries) < page_size:
+                break
+                
+            page += 1
+        
+        print(f"✅ Total cargado: {len(all_customers)} clientes")
+        return all_customers
+        
+    except Exception as e:
+        print(f"❌ Error cargando clientes: {str(e)}")
+        return None
 
 @app.route('/api/customers', methods=['POST'])
 def create_customer():
-    """Crear nuevo cliente en GoManage con campos fijos y validaciones mejoradas"""
+    """Crear nuevo cliente"""
     try:
-        # Verificar autenticación
-        if not session_id:
-            if not authenticate_with_gomanage():
-                return jsonify({
-                    "status": "error",
-                    "message": "Error de autenticación con GoManage"
-                }), 401
-        
-        # Obtener datos del cliente del request
         customer_data = request.get_json()
         
         if not customer_data:
@@ -337,16 +387,13 @@ def create_customer():
                     "message": f"Campo obligatorio faltante: {field}"
                 }), 400
         
-        # Preparar payload con campos fijos y valores por defecto
+        # Preparar payload con valores por defecto
         payload = {
-            # Campos fijos según especificaciones
             "has_discount_scale": True,
             "country_id": "ES",
             "currency_id": "eur",
             "periodicity_id": "1",
             "language_id": "cas",
-            
-            # Campos del formulario
             "business_name": customer_data.get("business_name"),
             "name": customer_data.get("name"),
             "vat_number": customer_data.get("vat_number"),
@@ -356,13 +403,9 @@ def create_customer():
             "province_id": int(customer_data.get("province_id", 3)),
             "payment_method_id": customer_data.get("payment_method_id", "007"),
             "tip_cli": customer_data.get("tip_cli", "3"),
-            
-            # Opciones booleanas
             "send_invoices": customer_data.get("send_invoices", False),
             "send_newsletter": customer_data.get("send_newsletter", False),
             "is_public_administration": customer_data.get("is_public_administration", False),
-            
-            # Campos con valores por defecto
             "control_level": 0,
             "customer_ambit": 0,
             "default_attachment_id": 0,
@@ -377,62 +420,33 @@ def create_customer():
             "purchasing_group_commission": 0,
             "request_print_fluorinated_gas": False,
             "subgroup_id": 0,
-            "user_dec1-2": 0,
-            "user_dec2-2": 0,
-            "user_dec3-2": 0,
-            "user_dec4-2": 0,
-            "user_dec5-2": 0,
-            "user_dec6-2": 0,
             "is_locked": "Si"
         }
         
-        # Headers para la petición
-        headers = {
-            'cookie': f"JSESSIONID={session_id}",
-            'Authorization': f"oecp {GOMANAGE_AUTH_TOKEN}",
-            'Content-Type': "application/json"
-        }
-        
-        # URL del endpoint de creación de clientes
-        url = f"{GOMANAGE_BASE_URL}/gomanage/web/data/apitmt-customers/"
-        
         print(f"🔄 Creando cliente: {payload['business_name']}")
-        print(f"📊 Payload: {json.dumps(payload, indent=2)}")
         
-        # Realizar petición POST
-        response = requests.post(
-            url,
-            headers=headers,
-            json=payload,
-            timeout=30
+        response = make_authenticated_request(
+            'POST',
+            f"{Config.GOMANAGE_BASE_URL}/gomanage/web/data/apitmt-customers/",
+            json=payload
         )
         
-        print(f"📊 Respuesta de GoManage: {response.status_code}")
-        print(f"📄 Contenido respuesta: {response.text}")
-        
-        if response.status_code == 200 or response.status_code == 201:
-            # Cliente creado exitosamente
-            response_data = response.json() if response.text else {}
-            
-            # Limpiar cache de clientes para forzar recarga
-            global all_customers
-            all_customers = []
+        if response and response.status_code in [200, 201]:
+            # Invalidar cache de clientes
+            data_cache.invalidate('all_customers')
             
             return jsonify({
                 "status": "success",
                 "message": "Cliente creado exitosamente",
-                "customer": response_data
+                "customer": response.json() if response.text else {}
             })
         else:
-            # Error en la creación
-            error_message = response.text if response.text else f"Error HTTP {response.status_code}"
-            print(f"❌ Error creando cliente: {error_message}")
-            
+            error_message = response.text if response else "Sin respuesta del servidor"
             return jsonify({
                 "status": "error",
                 "message": f"Error creando cliente: {error_message}",
-                "status_code": response.status_code
-            }), response.status_code
+                "status_code": response.status_code if response else 0
+            }), response.status_code if response else 500
             
     except Exception as e:
         print(f"❌ Error en create_customer: {str(e)}")
@@ -443,7 +457,7 @@ def create_customer():
 
 @app.route('/api/sales-orders', methods=['GET'])
 def get_sales_orders():
-    """Obtener lista de pedidos de venta con filtros opcionales"""
+    """Obtener pedidos de venta con cache"""
     try:
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('per_page', 50))
@@ -451,45 +465,44 @@ def get_sales_orders():
         sort = request.args.get('sort', 'date')
         from_date = request.args.get('from_date')
         
-        # Construir parámetros de la consulta
+        # Construir clave de cache
+        cache_key = f"sales_orders_{page}_{per_page}_{customer_id}_{sort}_{from_date}"
+        cached_data = data_cache.get(cache_key)
+        
+        if cached_data:
+            return jsonify(cached_data)
+        
+        # Construir parámetros
         params = {
             'page': page,
             'size': per_page,
             'sort': sort
         }
         
-        # Agregar filtro de cliente si se proporciona
         if customer_id:
             params['customer_id'] = customer_id
-            
-        # Agregar filtro de fecha si se proporciona
         if from_date:
             params['from_date'] = from_date
         
-        print(f"📄 Cargando pedidos de venta - Página {page}, Cliente: {customer_id or 'Todos'}, Desde: {from_date or 'Sin filtro'}")
+        print(f"📄 Cargando pedidos de venta - Página {page}")
         
-        # Hacer petición a GoManage
         response = make_authenticated_request(
             'GET',
-            f"{GOMANAGE_BASE_URL}/gomanage/web/data/apitmt-sales-invoices/List",
-            params=params,
-            timeout=30
+            f"{Config.GOMANAGE_BASE_URL}/gomanage/web/data/apitmt-sales-invoices/List",
+            params=params
         )
         
         if not response or response.status_code != 200:
-            print(f"❌ Error cargando pedidos de venta: {response.status_code if response else 'No response'}")
             return jsonify({
                 "status": "error",
-                "message": f"Error cargando pedidos de venta: {response.status_code if response else 'Sin respuesta'}"
+                "message": f"Error cargando pedidos: {response.status_code if response else 'Sin respuesta'}"
             }), 500
         
         data = response.json()
         sales_orders = data.get('page_entries', [])
         total_entries = data.get('total_entries', 0)
         
-        print(f"✅ Cargados {len(sales_orders)} pedidos de venta de {total_entries} totales")
-        
-        return jsonify({
+        result = {
             "status": "success",
             "sales_orders": sales_orders,
             "pagination": {
@@ -498,134 +511,43 @@ def get_sales_orders():
                 "total": total_entries,
                 "pages": (total_entries + per_page - 1) // per_page
             }
-        })
+        }
+        
+        # Guardar en cache
+        data_cache.set(cache_key, result)
+        
+        print(f"✅ Cargados {len(sales_orders)} pedidos de {total_entries} totales")
+        return jsonify(result)
         
     except Exception as e:
         print(f"❌ Error en get_sales_orders: {str(e)}")
         return jsonify({
             "status": "error",
-            "message": f"Error cargando pedidos de venta: {str(e)}"
+            "message": f"Error interno: {str(e)}"
         }), 500
 
-@app.route('/api/orders', methods=['POST'])
-def create_order():
-    """Crear nuevo pedido en GoManage"""
+@app.route('/api/dashboard', methods=['GET'])
+def get_dashboard_data():
+    """Obtener datos del dashboard con cache"""
     try:
-        # Verificar autenticación
-        if not session_id:
-            if not authenticate_with_gomanage():
-                return jsonify({
-                    "status": "error",
-                    "message": "Error de autenticación con GoManage"
-                }), 401
+        cache_key = 'dashboard_data'
+        cached_data = data_cache.get(cache_key)
         
-        # Obtener datos del pedido del request
-        order_data = request.get_json()
+        if cached_data:
+            return jsonify(cached_data)
         
-        if not order_data:
-            return jsonify({
-                "status": "error",
-                "message": "No se proporcionaron datos del pedido"
-            }), 400
+        # Cargar datos para el dashboard
+        customers = data_cache.get('all_customers')
+        if not customers:
+            customers = load_customers_from_api()
+            if customers:
+                data_cache.set('all_customers', customers)
         
-        # Validar campos obligatorios
-        required_fields = ['customer_id', 'reference', 'date', 'lines']
-        for field in required_fields:
-            if not order_data.get(field):
-                return jsonify({
-                    "status": "error",
-                    "message": f"Campo obligatorio faltante: {field}"
-                }), 400
-        
-        # Preparar payload del pedido
-        payload = {
-            "customer_id": order_data["customer_id"],
-            "reference": order_data["reference"],
-            "date": order_data["date"],
-            "lines": order_data["lines"],
-            "subtotal": order_data.get("subtotal", 0),
-            "discount": order_data.get("discount", 0),
-            "tax": order_data.get("tax", 0),
-            "total": order_data.get("total", 0),
-            "notes": order_data.get("notes", ""),
-            "status": "pending"
-        }
-        
-        # Headers para la petición
-        headers = {
-            'cookie': f"JSESSIONID={session_id}",
-            'Authorization': f"oecp {GOMANAGE_AUTH_TOKEN}",
-            'Content-Type': "application/json"
-        }
-        
-        # URL del endpoint de creación de pedidos
-        url = f"{GOMANAGE_BASE_URL}/gomanage/web/data/apitmt-orders/"
-        
-        print(f"🔄 Creando pedido: {payload['reference']}")
-        
-        # Realizar petición POST
-        response = requests.post(
-            url,
-            headers=headers,
-            json=payload,
-            timeout=30
-        )
-        
-        print(f"📊 Respuesta de GoManage: {response.status_code}")
-        
-        if response.status_code == 200 or response.status_code == 201:
-            return jsonify({
-                "status": "success",
-                "message": "Pedido creado exitosamente en GoManage",
-                "order_id": response.json().get('id', 'N/A') if response.text else 'N/A',
-                "reference": order_data["reference"]
-            })
-        else:
-            return jsonify({
-                "status": "error",
-                "message": f"Error del servidor GoManage: {response.status_code}",
-                "details": response.text
-            }), 500
-            
-    except Exception as e:
-        print(f"❌ Error creando pedido: {str(e)}")
-        return jsonify({
-            "status": "error",
-            "message": f"Error creando pedido: {str(e)}"
-        }), 500
-
-@app.route('/api/analytics/dashboard', methods=['GET'])
-def get_analytics_dashboard():
-    """Obtener datos de análisis para el dashboard"""
-    try:
-        # Asegurar que los datos estén cargados
-        if not all_customers:
-            load_all_customers()
-        
-        # Calcular métricas de clientes
-        customers_count = len(all_customers)
-        
-        # Análisis por tipo de cliente
-        customer_types = {}
-        for customer in all_customers:
-            tip_cli = customer.get('tip_cli', 'Sin clasificar')
-            customer_types[tip_cli] = customer_types.get(tip_cli, 0) + 1
-        
-        # Análisis por provincia
-        provinces = {}
-        for customer in all_customers:
-            province = customer.get('province_name', 'Sin provincia')
-            provinces[province] = provinces.get(province, 0) + 1
-        
-        # Top 10 provincias
-        top_provinces = sorted(provinces.items(), key=lambda x: x[1], reverse=True)[:10]
-        
-        # Obtener datos de pedidos de venta
+        # Obtener algunos pedidos para métricas
         sales_response = make_authenticated_request(
             'GET',
-            f"{GOMANAGE_BASE_URL}/gomanage/web/data/apitmt-sales-invoices/List",
-            params={'size': 100},
-            timeout=30
+            f"{Config.GOMANAGE_BASE_URL}/gomanage/web/data/apitmt-sales-invoices/List",
+            params={'size': 100}
         )
         
         sales_data = []
@@ -634,315 +556,59 @@ def get_analytics_dashboard():
             sales_data = sales_response.json().get('page_entries', [])
             total_sales = sum(float(order.get('total', 0)) for order in sales_data)
         
-        return jsonify({
+        dashboard_data = {
             "status": "success",
             "data": {
-                "customers": {
-                    "total": customers_count,
-                    "by_type": customer_types,
-                    "by_province": dict(top_provinces)
-                },
-                "sales": {
-                    "total_orders": len(sales_data),
-                    "total_amount": total_sales,
-                    "recent_orders": sales_data[:10]
-                }
+                "total_customers": len(customers) if customers else 0,
+                "total_products": 0,  # Placeholder
+                "active_orders": len(sales_data),
+                "monthly_revenue": total_sales,
+                "session_valid": session_manager.is_session_valid(),
+                "last_update": datetime.now().isoformat()
             }
-        })
+        }
+        
+        # Guardar en cache por menos tiempo (5 minutos)
+        data_cache.set(cache_key, dashboard_data)
+        
+        return jsonify(dashboard_data)
         
     except Exception as e:
-        print(f"❌ Error en analytics dashboard: {str(e)}")
+        print(f"❌ Error en dashboard: {str(e)}")
         return jsonify({
             "status": "error",
-            "message": f"Error cargando análisis: {str(e)}"
+            "message": f"Error cargando dashboard: {str(e)}"
         }), 500
 
+# ============================================================================
+# MANEJO DE ERRORES
+# ============================================================================
 
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({
+        "status": "error",
+        "message": "Endpoint no encontrado"
+    }), 404
 
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({
+        "status": "error",
+        "message": "Error interno del servidor"
+    }), 500
 
-
+# ============================================================================
+# INICIALIZACIÓN
+# ============================================================================
 
 if __name__ == '__main__':
-    import os
     port = int(os.environ.get('PORT', 5001))
-    app.run(host='0.0.0.0', port=port, debug=False)
-
-
-
-# ============================================================================
-# NUEVOS ENDPOINTS PARA FUNCIONALIDADES AVANZADAS
-# ============================================================================
-
-@app.route('/api/analytics/dashboard-advanced', methods=['GET'])
-def get_analytics_dashboard_advanced():
-    """Obtener datos del dashboard de análisis"""
-    try:
-        # Obtener datos de clientes
-        customers_response = make_gomanage_request('GET', 'customers')
-        customers_data = customers_response.get('customers', []) if customers_response else []
-        
-        # Obtener datos de pedidos
-        orders_response = make_gomanage_request('GET', 'sales-orders')
-        orders_data = orders_response.get('sales_orders', []) if orders_response else []
-        
-        # Procesar datos para analytics
-        analytics_data = {
-            'customers': {
-                'total': len(customers_data),
-                'by_type': process_customers_by_type(customers_data),
-                'by_province': process_customers_by_province(customers_data)
-            },
-            'sales': {
-                'total_orders': len(orders_data),
-                'total_amount': calculate_total_sales(orders_data),
-                'by_month': process_sales_by_month(orders_data)
-            }
-        }
-        
-        return jsonify({
-            'status': 'success',
-            'data': analytics_data
-        })
-        
-    except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'message': f'Error al obtener datos de análisis: {str(e)}'
-        }), 500
-
-def process_customers_by_type(customers):
-    """Procesar clientes por tipo"""
-    type_counts = {}
-    for customer in customers:
-        tip_cli = customer.get('tip_cli', 'otros')
-        type_counts[tip_cli] = type_counts.get(tip_cli, 0) + 1
-    return type_counts
-
-def process_customers_by_province(customers):
-    """Procesar clientes por provincia"""
-    province_counts = {}
-    for customer in customers:
-        province = customer.get('province_name', 'Sin especificar')
-        province_counts[province] = province_counts.get(province, 0) + 1
-    return province_counts
-
-def calculate_total_sales(orders):
-    """Calcular total de ventas"""
-    total = 0
-    for order in orders:
-        total += float(order.get('total', 0))
-    return total
-
-def process_sales_by_month(orders):
-    """Procesar ventas por mes"""
-    monthly_sales = {}
-    for order in orders:
-        # Simular procesamiento por mes
-        month = order.get('date', '2024-01')[:7]  # YYYY-MM
-        monthly_sales[month] = monthly_sales.get(month, 0) + float(order.get('total', 0))
-    return monthly_sales
-
-@app.route('/api/chat/mcp', methods=['POST'])
-def chat_mcp():
-    """Endpoint para el chat con MCP"""
-    try:
-        data = request.get_json()
-        question = data.get('question', '').strip()
-        
-        if not question:
-            return jsonify({
-                'status': 'error',
-                'message': 'La pregunta no puede estar vacía'
-            }), 400
-        
-        # Procesar la pregunta y generar respuesta
-        response = process_mcp_question(question)
-        
-        return jsonify({
-            'status': 'success',
-            'response': response
-        })
-        
-    except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'message': f'Error en el chat MCP: {str(e)}'
-        }), 500
-
-def process_mcp_question(question):
-    """Procesar pregunta del chat MCP y generar respuesta"""
-    question_lower = question.lower()
+    debug = os.environ.get('FLASK_ENV') == 'development'
     
-    # Respuestas basadas en palabras clave
-    if 'clientes' in question_lower or 'cliente' in question_lower:
-        try:
-            customers_response = make_gomanage_request('GET', 'customers')
-            if customers_response:
-                total_customers = len(customers_response.get('customers', []))
-                return f"📊 **Información de Clientes:**\n\n• Total de clientes: **{total_customers}**\n• Clientes activos en el sistema\n• Datos actualizados en tiempo real desde GoManage\n\n¿Te gustaría ver más detalles sobre algún aspecto específico?"
-            else:
-                return "No pude obtener la información de clientes en este momento. Por favor, verifica la conexión con GoManage."
-        except:
-            return "Hay un problema temporal con la conexión a GoManage. Por favor, inténtalo de nuevo."
+    print("🚀 Iniciando GoManage...")
+    print(f"📡 Puerto: {port}")
+    print(f"🔧 Debug: {debug}")
+    print(f"🌐 GoManage API: {Config.GOMANAGE_BASE_URL}")
     
-    elif 'ventas' in question_lower or 'pedidos' in question_lower:
-        try:
-            orders_response = make_gomanage_request('GET', 'sales-orders')
-            if orders_response:
-                orders = orders_response.get('sales_orders', [])
-                total_orders = len(orders)
-                total_amount = sum(float(order.get('total', 0)) for order in orders)
-                return f"📈 **Información de Ventas:**\n\n• Total de pedidos: **{total_orders}**\n• Facturación total: **{total_amount:,.2f}€**\n• Datos en tiempo real desde GoManage\n\n¿Quieres que genere un reporte detallado?"
-            else:
-                return "No pude obtener la información de ventas en este momento."
-        except:
-            return "Hay un problema temporal con la conexión a GoManage para obtener datos de ventas."
-    
-    elif 'reporte' in question_lower or 'informe' in question_lower:
-        return "📄 **Generación de Reportes:**\n\nPuedo ayudarte a generar varios tipos de reportes:\n\n• **Reporte de Clientes** - Lista completa con estadísticas\n• **Reporte de Ventas** - Análisis de tendencias\n• **Reporte Geográfico** - Distribución por provincias\n• **Facturas y Albaranes** - Documentos comerciales\n\nUsa el panel de documentos a la derecha para configurar y generar reportes personalizados."
-    
-    elif 'funciones' in question_lower or 'ayuda' in question_lower or 'qué puedes' in question_lower:
-        return "🤖 **Mis Funcionalidades:**\n\n• **Consultas de Datos** - Información sobre clientes, pedidos y ventas\n• **Análisis en Tiempo Real** - Estadísticas y métricas actualizadas\n• **Generación de Reportes** - Documentos PDF, Excel y CSV\n• **Búsquedas Avanzadas** - Encuentra información específica\n• **Sugerencias** - Recomendaciones basadas en datos\n• **Integración MCP** - Acceso directo a la API de GoManage\n\n¿En qué área específica te gustaría que te ayude?"
-    
-    elif 'pdf' in question_lower or 'documento' in question_lower:
-        return "📄 **Generación de Documentos PDF:**\n\nPuedo generar varios tipos de documentos:\n\n• **Facturas** - Documentos comerciales oficiales\n• **Albaranes** - Documentos de entrega\n• **Reportes** - Análisis detallados con gráficos\n• **Listados** - Exportaciones de datos\n\nUsa el panel de documentos para configurar el formato, período y opciones específicas. Los documentos se generan con datos reales de GoManage."
-    
-    elif 'hola' in question_lower or 'buenos' in question_lower:
-        return "¡Hola! 👋 Soy tu asistente MCP de GoManage. Estoy aquí para ayudarte con:\n\n• Consultas sobre tu negocio\n• Análisis de datos\n• Generación de reportes\n• Información del sistema\n\n¿En qué puedo ayudarte hoy?"
-    
-    else:
-        return f"🤔 Entiendo que preguntas sobre: *{question}*\n\nActualmente puedo ayudarte con:\n\n• **Información de clientes y pedidos**\n• **Análisis de ventas y estadísticas**\n• **Generación de reportes y documentos**\n• **Búsquedas en el sistema**\n\n¿Podrías ser más específico sobre qué información necesitas?"
-
-@app.route('/api/documents/generate', methods=['POST'])
-def generate_document():
-    """Generar documento PDF"""
-    try:
-        data = request.get_json()
-        template = data.get('template')
-        title = data.get('title', 'Documento')
-        format_type = data.get('format', 'pdf')
-        
-        # Simular generación de documento
-        # En una implementación real, aquí se generaría el PDF usando reportlab o weasyprint
-        
-        document_info = {
-            'title': title,
-            'format': format_type,
-            'generated_at': datetime.now().isoformat(),
-            'size': '1.2 MB',
-            'pages': 15 if template == 'customer-report' else 8
-        }
-        
-        return jsonify({
-            'status': 'success',
-            'message': f'Documento "{title}" generado exitosamente',
-            'document': document_info
-        })
-        
-    except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'message': f'Error al generar documento: {str(e)}'
-        }), 500
-
-@app.route('/api/orders/advanced', methods=['GET'])
-def get_advanced_orders():
-    """Obtener datos avanzados de pedidos para gestión"""
-    try:
-        # Obtener pedidos de GoManage
-        orders_response = make_gomanage_request('GET', 'sales-orders')
-        
-        if not orders_response:
-            return jsonify({
-                'status': 'error',
-                'message': 'No se pudieron obtener los pedidos'
-            }), 500
-        
-        orders = orders_response.get('sales_orders', [])
-        
-        # Enriquecer datos con información adicional para gestión avanzada
-        enriched_orders = []
-        for order in orders:
-            enriched_order = order.copy()
-            # Simular datos adicionales para gestión avanzada
-            enriched_order['status'] = simulate_order_status()
-            enriched_order['priority'] = simulate_order_priority()
-            enriched_order['estimated_delivery'] = simulate_delivery_date()
-            enriched_orders.append(enriched_order)
-        
-        return jsonify({
-            'status': 'success',
-            'orders': enriched_orders,
-            'total': len(enriched_orders)
-        })
-        
-    except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'message': f'Error al obtener pedidos avanzados: {str(e)}'
-        }), 500
-
-def simulate_order_status():
-    """Simular estado del pedido"""
-    statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered']
-    return random.choice(statuses)
-
-def simulate_order_priority():
-    """Simular prioridad del pedido"""
-    priorities = ['high', 'medium', 'low']
-    return random.choice(priorities)
-
-def simulate_delivery_date():
-    """Simular fecha de entrega estimada"""
-    from datetime import timedelta
-    base_date = datetime.now()
-    days_ahead = random.randint(1, 14)
-    return (base_date + timedelta(days=days_ahead)).isoformat()
-
-# ============================================================================
-# ENDPOINT PARA SERVIR LAS NUEVAS SECCIONES HTML
-# ============================================================================
-
-@app.route('/api/sections/<section_name>')
-def get_section_html(section_name):
-    """Servir secciones HTML específicas"""
-    try:
-        section_files = {
-            'analytics': 'templates/analytics.html',
-            'advanced-orders': 'templates/advanced_orders.html',
-            'chat-mcp': 'templates/chat_mcp.html'
-        }
-        
-        if section_name not in section_files:
-            return jsonify({
-                'status': 'error',
-                'message': 'Sección no encontrada'
-            }), 404
-        
-        file_path = section_files[section_name]
-        
-        try:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-            
-            return jsonify({
-                'status': 'success',
-                'content': content
-            })
-        except FileNotFoundError:
-            return jsonify({
-                'status': 'error',
-                'message': 'Archivo de sección no encontrado'
-            }), 404
-            
-    except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'message': f'Error al cargar sección: {str(e)}'
-        }), 500
-
-if __name__ == '__main__':
-    import os
-    port = int(os.environ.get('PORT', 5001))
-    app.run(host='0.0.0.0', port=port, debug=False)
-
+    app.run(host='0.0.0.0', port=port, debug=debug)
