@@ -16,7 +16,6 @@ class Config:
     GOMANAGE_AUTH_TOKEN = "AKAAAQAAAAhtb2JpbGVBAACgAAIAAAAHZGlzdHJpAACQAAsAAAAIAAAAAGhdIuoAMAAMAAAAAgAMAKAAGgAAAA9TU09BY2Nlc3NUb2tlbgAAoAANAAAADVJPTEVfUFNDVXNlcgAAoAAPAAAANEQzQzM1OEI5Qzc0MjI3NTQ1MkM5NkZFMzIxRjREMjFCRkUzOEYyMUFBODlELm9lcGFzMQAA0AAQAAAACAAAAABoXTD6ANAAFwAAAAgAAAAAAAAAeADQABsAAAAIAAAAAAAAAHgA0AAcAAAACAAAAAAMwnAPALAAFQAAABBTNG0v02DCpLdqzAJOPicS"
     SESSION_TIMEOUT_MINUTES = 25
     REQUEST_TIMEOUT = 30
-    CACHE_TIMEOUT_MINUTES = 30
 
 # Singleton para gestión de sesión
 class SessionManager:
@@ -137,7 +136,7 @@ class DataCache:
         if not timestamp:
             return None
             
-        if datetime.now() - timestamp > timedelta(minutes=Config.CACHE_TIMEOUT_MINUTES):
+        if datetime.now() - timestamp > timedelta(minutes=30):
             self.invalidate(key)
             return None
             
@@ -366,166 +365,6 @@ def load_customers_from_api():
         print(f"❌ Error cargando clientes: {str(e)}")
         return None
 
-@app.route('/api/customers', methods=['POST'])
-def create_customer():
-    """Crear nuevo cliente"""
-    try:
-        customer_data = request.get_json()
-        
-        if not customer_data:
-            return jsonify({
-                "status": "error",
-                "message": "No se proporcionaron datos del cliente"
-            }), 400
-        
-        # Validar campos obligatorios
-        required_fields = ['business_name', 'name', 'vat_number']
-        for field in required_fields:
-            if not customer_data.get(field):
-                return jsonify({
-                    "status": "error",
-                    "message": f"Campo obligatorio faltante: {field}"
-                }), 400
-        
-        # Preparar payload con valores por defecto
-        payload = {
-            "has_discount_scale": True,
-            "country_id": "ES",
-            "currency_id": "eur",
-            "periodicity_id": "1",
-            "language_id": "cas",
-            "business_name": customer_data.get("business_name"),
-            "name": customer_data.get("name"),
-            "vat_number": customer_data.get("vat_number"),
-            "city": customer_data.get("city", ""),
-            "street_name": customer_data.get("street_name", ""),
-            "postal_code": customer_data.get("postal_code", 0),
-            "province_id": int(customer_data.get("province_id", 3)),
-            "payment_method_id": customer_data.get("payment_method_id", "007"),
-            "tip_cli": customer_data.get("tip_cli", "3"),
-            "send_invoices": customer_data.get("send_invoices", False),
-            "send_newsletter": customer_data.get("send_newsletter", False),
-            "is_public_administration": customer_data.get("is_public_administration", False),
-            "control_level": 0,
-            "customer_ambit": 0,
-            "default_attachment_id": 0,
-            "group_id": 0,
-            "has_attachments": False,
-            "has_self_invoicing": False,
-            "has_shared_contacts_by_zone": False,
-            "is_foreign": False,
-            "is_invoiced_at_central": False,
-            "is_not_regular_customer": False,
-            "is_resident": False,
-            "purchasing_group_commission": 0,
-            "request_print_fluorinated_gas": False,
-            "subgroup_id": 0,
-            "is_locked": "Si"
-        }
-        
-        print(f"🔄 Creando cliente: {payload['business_name']}")
-        
-        response = make_authenticated_request(
-            'POST',
-            f"{Config.GOMANAGE_BASE_URL}/gomanage/web/data/apitmt-customers/",
-            json=payload
-        )
-        
-        if response and response.status_code in [200, 201]:
-            # Invalidar cache de clientes
-            data_cache.invalidate('all_customers')
-            
-            return jsonify({
-                "status": "success",
-                "message": "Cliente creado exitosamente",
-                "customer": response.json() if response.text else {}
-            })
-        else:
-            error_message = response.text if response else "Sin respuesta del servidor"
-            return jsonify({
-                "status": "error",
-                "message": f"Error creando cliente: {error_message}",
-                "status_code": response.status_code if response else 0
-            }), response.status_code if response else 500
-            
-    except Exception as e:
-        print(f"❌ Error en create_customer: {str(e)}")
-        return jsonify({
-            "status": "error",
-            "message": f"Error interno: {str(e)}"
-        }), 500
-
-@app.route('/api/sales-orders', methods=['GET'])
-def get_sales_orders():
-    """Obtener pedidos de venta con cache"""
-    try:
-        page = int(request.args.get('page', 1))
-        per_page = int(request.args.get('per_page', 50))
-        customer_id = request.args.get('customer_id')
-        sort = request.args.get('sort', 'date')
-        from_date = request.args.get('from_date')
-        
-        # Construir clave de cache
-        cache_key = f"sales_orders_{page}_{per_page}_{customer_id}_{sort}_{from_date}"
-        cached_data = data_cache.get(cache_key)
-        
-        if cached_data:
-            return jsonify(cached_data)
-        
-        # Construir parámetros
-        params = {
-            'page': page,
-            'size': per_page,
-            'sort': sort
-        }
-        
-        if customer_id:
-            params['customer_id'] = customer_id
-        if from_date:
-            params['from_date'] = from_date
-        
-        print(f"📄 Cargando pedidos de venta - Página {page}")
-        
-        response = make_authenticated_request(
-            'GET',
-            f"{Config.GOMANAGE_BASE_URL}/gomanage/web/data/apitmt-sales-invoices/List",
-            params=params
-        )
-        
-        if not response or response.status_code != 200:
-            return jsonify({
-                "status": "error",
-                "message": f"Error cargando pedidos: {response.status_code if response else 'Sin respuesta'}"
-            }), 500
-        
-        data = response.json()
-        sales_orders = data.get('page_entries', [])
-        total_entries = data.get('total_entries', 0)
-        
-        result = {
-            "status": "success",
-            "sales_orders": sales_orders,
-            "pagination": {
-                "page": page,
-                "per_page": per_page,
-                "total": total_entries,
-                "pages": (total_entries + per_page - 1) // per_page
-            }
-        }
-        
-        # Guardar en cache
-        data_cache.set(cache_key, result)
-        
-        print(f"✅ Cargados {len(sales_orders)} pedidos de {total_entries} totales")
-        return jsonify(result)
-        
-    except Exception as e:
-        print(f"❌ Error en get_sales_orders: {str(e)}")
-        return jsonify({
-            "status": "error",
-            "message": f"Error interno: {str(e)}"
-        }), 500
-
 @app.route('/api/dashboard', methods=['GET'])
 def get_dashboard_data():
     """Obtener datos del dashboard con cache"""
@@ -543,26 +382,13 @@ def get_dashboard_data():
             if customers:
                 data_cache.set('all_customers', customers)
         
-        # Obtener algunos pedidos para métricas
-        sales_response = make_authenticated_request(
-            'GET',
-            f"{Config.GOMANAGE_BASE_URL}/gomanage/web/data/apitmt-sales-invoices/List",
-            params={'size': 100}
-        )
-        
-        sales_data = []
-        total_sales = 0
-        if sales_response and sales_response.status_code == 200:
-            sales_data = sales_response.json().get('page_entries', [])
-            total_sales = sum(float(order.get('total', 0)) for order in sales_data)
-        
         dashboard_data = {
             "status": "success",
             "data": {
                 "total_customers": len(customers) if customers else 0,
                 "total_products": 0,  # Placeholder
-                "active_orders": len(sales_data),
-                "monthly_revenue": total_sales,
+                "active_orders": 0,   # Placeholder
+                "monthly_revenue": 0, # Placeholder
                 "session_valid": session_manager.is_session_valid(),
                 "last_update": datetime.now().isoformat()
             }
