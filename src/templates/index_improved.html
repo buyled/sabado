@@ -1,0 +1,4192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="autocomplete" content="off">
+    <title>GoManage - Sistema de Gestión Empresarial</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            /* Colors */
+            --primary-default: #7B61FF;
+            --primary-light: #A290FF;
+            --primary-dark: #5D45DF;
+            --secondary-default: #4CAF50;
+            --secondary-light: #8BC34A;
+            --secondary-dark: #388E3C;
+            
+            /* Neutral Colors */
+            --neutral-100: #FFFFFF;
+            --neutral-200: #F8F9FA;
+            --neutral-300: #EDF0F3;
+            --neutral-400: #DFE4EB;
+            --neutral-500: #CCD3DA;
+            --neutral-600: #A9B3BE;
+            --neutral-700: #7A8795;
+            --neutral-800: #4F5D6B;
+            --neutral-900: #2C3E50;
+            
+            /* Text Colors */
+            --text-primary: #2C3E50;
+            --text-secondary: #7A8795;
+            --text-disabled: #A9B3BE;
+            --text-on-primary: #FFFFFF;
+            
+            /* Status Colors */
+            --status-success: #4CAF50;
+            --status-warning: #FFC107;
+            --status-error: #F44336;
+            --status-info: #2196F3;
+            
+            /* Border Radius */
+            --radius-small: 8px;
+            --radius-medium: 16px;
+            --radius-large: 24px;
+            --radius-pill: 999px;
+            
+            /* Spacing */
+            --spacing-xxs: 4px;
+            --spacing-xs: 8px;
+            --spacing-sm: 12px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --spacing-xxl: 48px;
+            
+            /* Shadows */
+            --shadow-light: 0px 2px 4px rgba(0, 0, 0, 0.05);
+            --shadow-medium: 0px 4px 8px rgba(0, 0, 0, 0.08);
+            --shadow-hard: 0px 8px 16px rgba(0, 0, 0, 0.1);
+            --shadow-glow: 0px 0px 20px rgba(123, 97, 255, 0.15);
+            
+            /* Typography */
+            --font-family: 'Inter', sans-serif;
+            --font-h1-size: 32px;
+            --font-h1-weight: 700;
+            --font-h2-size: 24px;
+            --font-h2-weight: 600;
+            --font-h3-size: 18px;
+            --font-h3-weight: 600;
+            --font-body-size: 14px;
+            --font-body-weight: 400;
+            --font-button-weight: 500;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--text-primary);
+            font-size: var(--font-body-size);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar mejorado */
+        .sidebar {
+            width: 280px;
+            background: var(--neutral-100);
+            border-right: 1px solid var(--neutral-300);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-medium);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-xl);
+            padding-bottom: var(--spacing-lg);
+            border-bottom: 2px solid var(--neutral-300);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-default), var(--primary-light));
+            border-radius: var(--radius-medium);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        .logo span {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .nav-section {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .nav-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--spacing-sm);
+            padding-left: var(--spacing-sm);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--spacing-sm) var(--spacing-md);
+            margin-bottom: var(--spacing-xs);
+            border-radius: var(--radius-medium);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: var(--neutral-200);
+            transform: translateX(4px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary-default), var(--primary-light));
+            color: white;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .nav-item .badge {
+            background: var(--neutral-400);
+            color: var(--text-primary);
+            padding: 2px 8px;
+            border-radius: var(--radius-pill);
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .nav-item.active .badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .connection-status {
+            position: absolute;
+            bottom: var(--spacing-lg);
+            left: var(--spacing-lg);
+            right: var(--spacing-lg);
+            padding: var(--spacing-sm);
+            border-radius: var(--radius-medium);
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .connection-status.connected {
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--status-success);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: var(--spacing-xl);
+            background: transparent;
+        }
+
+        .content-section {
+            display: none;
+            background: var(--neutral-100);
+            border-radius: var(--radius-large);
+            box-shadow: var(--shadow-medium);
+            overflow: hidden;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-default), var(--primary-light));
+            color: white;
+            padding: var(--spacing-xl);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: var(--font-h1-size);
+            font-weight: var(--font-h1-weight);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        /* Wizard Progress mejorado */
+        .wizard-progress {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: var(--spacing-xl);
+            background: var(--neutral-200);
+            position: relative;
+        }
+
+        .wizard-progress::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 20%;
+            right: 20%;
+            height: 2px;
+            background: var(--neutral-400);
+            z-index: 1;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--spacing-sm);
+            position: relative;
+            z-index: 2;
+            background: var(--neutral-200);
+            padding: var(--spacing-sm);
+            min-width: 120px;
+        }
+
+        .step-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--neutral-400);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            transition: all 0.3s ease;
+            border: 4px solid var(--neutral-300);
+        }
+
+        .step.active .step-icon {
+            background: linear-gradient(135deg, var(--primary-default), var(--primary-light));
+            border-color: var(--primary-default);
+            box-shadow: var(--shadow-glow);
+            transform: scale(1.1);
+        }
+
+        .step.completed .step-icon {
+            background: var(--status-success);
+            border-color: var(--status-success);
+        }
+
+        .step-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .step.active .step-label {
+            color: var(--primary-default);
+        }
+
+        /* Wizard Form mejorado */
+        .wizard-form {
+            padding: var(--spacing-xl);
+        }
+
+        .wizard-step {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .wizard-step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+            padding-bottom: var(--spacing-lg);
+            border-bottom: 2px solid var(--neutral-300);
+        }
+
+        .step-header h2 {
+            font-size: var(--font-h2-size);
+            font-weight: var(--font-h2-weight);
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .step-header p {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        /* Form Grid mejorado */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group.required label::after {
+            content: ' *';
+            color: var(--status-error);
+            font-weight: 600;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            margin-bottom: var(--spacing-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .label-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .tooltip {
+            cursor: help;
+            color: var(--text-secondary);
+            margin-left: auto;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 2px solid var(--neutral-300);
+            border-radius: var(--radius-medium);
+            font-size: var(--font-body-size);
+            font-family: var(--font-family);
+            transition: all 0.3s ease;
+            background: var(--neutral-100);
+            color: var(--text-primary);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-default);
+            box-shadow: 0 0 0 4px rgba(123, 97, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .form-group input:invalid {
+            border-color: var(--status-error);
+        }
+
+        .form-group input:valid {
+            border-color: var(--status-success);
+        }
+
+        .field-status {
+            position: absolute;
+            right: var(--spacing-md);
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            margin-top: var(--spacing-lg);
+        }
+
+        .field-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: var(--spacing-xs);
+            font-style: italic;
+        }
+
+        /* Checkbox mejorado */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-md);
+            border: 2px solid var(--neutral-300);
+            border-radius: var(--radius-medium);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .checkbox-group:hover {
+            border-color: var(--primary-light);
+            background: rgba(123, 97, 255, 0.05);
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            cursor: pointer;
+            margin-bottom: 0 !important;
+            width: 100%;
+        }
+
+        .checkmark {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--neutral-400);
+            border-radius: var(--radius-small);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            display: none;
+        }
+
+        .checkbox-group input[type="checkbox"]:checked + .checkmark {
+            background: var(--primary-default);
+            border-color: var(--primary-default);
+        }
+
+        .checkbox-group input[type="checkbox"]:checked + .checkmark::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        /* Resumen del cliente */
+        .customer-summary {
+            background: linear-gradient(135deg, var(--neutral-200), var(--neutral-300));
+            border-radius: var(--radius-large);
+            padding: var(--spacing-lg);
+            margin-top: var(--spacing-xl);
+            border: 2px solid var(--neutral-400);
+        }
+
+        .customer-summary h3 {
+            margin-bottom: var(--spacing-md);
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .summary-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+        }
+
+        .summary-item {
+            background: white;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-medium);
+            border: 1px solid var(--neutral-300);
+            text-align: center;
+        }
+
+        .summary-item strong {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 12px;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .summary-item span {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Navigation mejorada */
+        .wizard-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-xl);
+            background: var(--neutral-200);
+            border-top: 2px solid var(--neutral-300);
+            gap: var(--spacing-md);
+        }
+
+        .wizard-navigation button {
+            padding: var(--spacing-md) var(--spacing-xl);
+            border: none;
+            border-radius: var(--radius-medium);
+            font-weight: 600;
+            font-size: var(--font-body-size);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            min-width: 140px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-default), var(--primary-light));
+            color: white;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hard);
+        }
+
+        .btn-secondary {
+            background: var(--neutral-600);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: var(--neutral-700);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--status-success), #66BB6A);
+            color: white;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hard);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 2px solid var(--neutral-400);
+        }
+
+        .btn-outline:hover {
+            background: var(--neutral-300);
+            border-color: var(--neutral-500);
+        }
+
+        /* Result message mejorado */
+        .result-message {
+            margin-top: var(--spacing-lg);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-medium);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .result-message.success {
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--status-success);
+            border: 2px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .result-message.error {
+            background: rgba(244, 67, 54, 0.1);
+            color: var(--status-error);
+            border: 2px solid rgba(244, 67, 54, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 250px;
+                /* Removido: transform: translateX(-100%); */
+                transition: transform 0.3s ease;
+            }
+
+            .main-content {
+                margin-left: 250px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .wizard-progress {
+                flex-wrap: wrap;
+                gap: var(--spacing-sm);
+            }
+
+            .wizard-progress::before {
+                display: none;
+            }
+
+            .step {
+                min-width: 80px;
+            }
+
+            .step-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+
+            .wizard-navigation {
+                flex-direction: column;
+                gap: var(--spacing-md);
+            }
+
+            .wizard-navigation button {
+                width: 100%;
+            }
+
+            .summary-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Floating action button */
+        .fab {
+            position: fixed;
+            bottom: var(--spacing-xl);
+            right: var(--spacing-xl);
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-default), var(--primary-light));
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: var(--shadow-hard);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-glow);
+        }
+        
+        /* Sales Orders Styles */
+        .sales-order-form {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-header h3 {
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .products-table {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .table-header {
+            display: grid;
+            grid-template-columns: 1fr 2fr 100px 120px 80px 120px 80px;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--primary-default);
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .product-line {
+            display: grid;
+            grid-template-columns: 1fr 2fr 100px 120px 80px 120px 80px;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            align-items: center;
+        }
+
+        .product-line:last-child {
+            border-bottom: none;
+        }
+
+        .product-line input {
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .product-line input:focus {
+            outline: none;
+            border-color: var(--primary-default);
+            box-shadow: 0 0 0 3px rgba(123, 97, 255, 0.1);
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .quantity-btn:hover {
+            background: var(--background-light);
+            border-color: var(--primary-default);
+        }
+
+        .quantity-input {
+            width: 60px;
+            text-align: center;
+        }
+
+        .delete-line-btn {
+            background: var(--error-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0.5rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .delete-line-btn:hover {
+            background: #dc2626;
+        }
+
+        .order-summary {
+            background: linear-gradient(135deg, var(--primary-default), var(--primary-dark));
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .order-summary h3 {
+            margin: 0 0 1.5rem 0;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .summary-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .summary-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1rem;
+        }
+
+        .summary-line.total {
+            border-top: 2px solid rgba(255, 255, 255, 0.3);
+            padding-top: 0.8rem;
+            margin-top: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary-default);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .btn-info {
+            background: var(--info-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-info:hover {
+            background: #0284c7;
+            transform: translateY(-2px);
+        }
+
+        /* Responsive Design for Products Table */
+        @media (max-width: 1024px) {
+            .table-header,
+            .product-line {
+                grid-template-columns: 1fr 1.5fr 80px 100px 60px 100px 60px;
+                gap: 0.5rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .products-table {
+                overflow-x: auto;
+            }
+            
+            .table-header,
+            .product-line {
+                min-width: 600px;
+            }
+        }
+        
+        /* Invoices Section Styles */
+        .search-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-controls {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 1.5rem;
+            align-items: end;
+        }
+
+        .search-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .search-group label {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .search-group input {
+            padding: 0.8rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-group input:focus {
+            outline: none;
+            border-color: var(--primary-default);
+            box-shadow: 0 0 0 3px rgba(123, 97, 255, 0.1);
+        }
+
+        .search-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary-default), var(--primary-dark));
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 4px 12px rgba(123, 97, 255, 0.3);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            opacity: 0.8;
+        }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 0.25rem;
+        }
+
+        .invoices-table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            background: var(--background-light);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .table-pagination {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .invoices-table {
+            width: 100%;
+        }
+
+        .table-header-row {
+            display: grid;
+            grid-template-columns: 50px 120px 120px 2fr 120px 100px 150px;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: var(--primary-default);
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .invoice-row {
+            display: grid;
+            grid-template-columns: 50px 120px 120px 2fr 120px 100px 150px;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+
+        .invoice-row:hover {
+            background: var(--background-light);
+        }
+
+        .invoice-row:last-child {
+            border-bottom: none;
+        }
+
+        .invoice-row.selected {
+            background: rgba(123, 97, 255, 0.1);
+        }
+
+        .invoice-number {
+            font-weight: 600;
+            color: var(--primary-default);
+        }
+
+        .invoice-date {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .invoice-customer {
+            font-weight: 500;
+        }
+
+        .invoice-amount {
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .invoice-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .status-paid {
+            background: var(--success-light);
+            color: var(--success-color);
+        }
+
+        .status-pending {
+            background: var(--warning-light);
+            color: var(--warning-color);
+        }
+
+        .status-overdue {
+            background: var(--error-light);
+            color: var(--error-color);
+        }
+
+        .invoice-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-download {
+            background: var(--primary-default);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-download:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-download:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading-message {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 3rem;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .loading-message i {
+            font-size: 1.5rem;
+            color: var(--primary-default);
+        }
+
+        .empty-message {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 3rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .empty-message i {
+            font-size: 3rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive Design for Invoices */
+        @media (max-width: 1024px) {
+            .search-controls {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .search-actions {
+                justify-content: center;
+            }
+            
+            .table-header-row,
+            .invoice-row {
+                grid-template-columns: 40px 100px 100px 1fr 100px 80px 120px;
+                gap: 0.5rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .table-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+            
+            .table-pagination {
+                justify-content: center;
+            }
+            
+            .invoices-table {
+                overflow-x: auto;
+            }
+            
+            .table-header-row,
+            .invoice-row {
+                min-width: 600px;
+            }
+        }
+        
+        /* Client Search Styles */
+        .client-search-controls {
+            display: grid;
+            grid-template-columns: 1fr 200px auto;
+            gap: 20px;
+            align-items: end;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .search-group {
+            position: relative;
+        }
+        
+        .search-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .search-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-group input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+        
+        .client-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .suggestion-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #f8f9fa;
+            transition: background-color 0.2s ease;
+        }
+        
+        .suggestion-item:hover,
+        .suggestion-item.active {
+            background-color: #f8f9fa;
+        }
+        
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        
+        .suggestion-name {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .suggestion-id {
+            font-size: 12px;
+            color: #6c757d;
+            margin-left: 8px;
+        }
+        
+        .search-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .client-info-section {
+            margin-bottom: 30px;
+        }
+        
+        .client-info-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .client-basic-info {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .info-item label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+        
+        .info-item span {
+            font-size: 16px;
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .client-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .documents-section {
+            margin-top: 30px;
+        }
+        
+        .documents-table-container {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .table-header h3 {
+            margin: 0;
+            color: #495057;
+        }
+        
+        .table-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .documents-table {
+            min-height: 300px;
+        }
+        
+        .table-header-row {
+            display: grid;
+            grid-template-columns: 50px 100px 150px 120px 200px 120px 120px;
+            gap: 10px;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+        }
+        
+        .document-row {
+            display: grid;
+            grid-template-columns: 50px 100px 150px 120px 200px 120px 120px;
+            gap: 10px;
+            padding: 15px 20px;
+            border-bottom: 1px solid #f8f9fa;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+        
+        .document-row:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .document-row.selected {
+            background-color: #e3f2fd;
+        }
+        
+        .col-select {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .col-type {
+            font-weight: 600;
+        }
+        
+        .col-number {
+            font-family: monospace;
+            font-size: 13px;
+        }
+        
+        .col-date {
+            color: #6c757d;
+            font-size: 13px;
+        }
+        
+        .col-reference {
+            font-size: 13px;
+            color: #495057;
+        }
+        
+        .col-amount {
+            text-align: right;
+            font-weight: 600;
+            color: #28a745;
+        }
+        
+        .col-actions {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+        
+        .btn-icon {
+            padding: 6px 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-download {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-download:hover {
+            background: #0056b3;
+        }
+        
+        .empty-message {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-message i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .empty-message h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+        
+        .empty-message p {
+            margin: 0;
+            font-size: 14px;
+        }
+        
+        /* Responsive Design for Client Search */
+        @media (max-width: 768px) {
+            .client-search-controls {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .client-info-card {
+                flex-direction: column;
+                gap: 20px;
+                align-items: stretch;
+            }
+            
+            .client-basic-info {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .table-header-row,
+            .document-row {
+                grid-template-columns: 40px 80px 120px 100px 150px 100px 100px;
+                font-size: 12px;
+            }
+            
+            .table-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+            
+            .table-actions {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <span>GoManage</span>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title">Gestión</div>
+                <div class="nav-item" data-section="customers">
+                    <span><i class="fas fa-users"></i> Clientes</span>
+                    <span class="badge">1</span>
+                </div>
+                <div class="nav-item active" data-section="create-customer">
+                    <span><i class="fas fa-user-plus"></i> Alta de Clientes</span>
+                </div>
+                <div class="nav-item" data-section="orders">
+                    <span><i class="fas fa-shopping-cart"></i> Pedidos</span>
+                    <span class="badge">2</span>
+                </div>
+                <div class="nav-item" data-section="sales-orders">
+                    <span><i class="fas fa-clipboard-list"></i> Pedidos de Venta</span>
+                    <span class="badge">3</span>
+                </div>
+                <div class="nav-item" data-section="invoices">
+                    <span><i class="fas fa-file-invoice"></i> Facturas</span>
+                    <span class="badge" id="invoicesNavBadge">7,077</span>
+                </div>
+                <div class="nav-item" data-section="client-search">
+                    <span><i class="fas fa-search"></i> Búsqueda de Clientes</span>
+                    <span class="badge">1,126</span>
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title">Análisis</div>
+                <div class="nav-item" data-section="analytics">
+                    <span><i class="fas fa-chart-bar"></i> Análisis y Reportes</span>
+                    <span class="badge">4</span>
+                </div>
+                <div class="nav-item" data-section="advanced-orders">
+                    <span><i class="fas fa-cogs"></i> Gestión Avanzada</span>
+                    <span class="badge">5</span>
+                </div>
+                <div class="nav-item" data-section="chat-mcp">
+                    <span><i class="fas fa-robot"></i> Chat MCP</span>
+                    <span class="badge">6</span>
+                </div>
+            </div>
+
+            <div class="connection-status connected" id="connectionStatus">
+                <i class="fas fa-wifi"></i> Conectado
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Create Customer Section -->
+            <div class="content-section active" id="create-customer">
+                <div class="header">
+                    <h1><i class="fas fa-user-plus"></i> Alta de Clientes</h1>
+                    <p>Registro intuitivo de nuevos clientes en el sistema</p>
+                </div>
+                
+                <!-- Progress Steps -->
+                <div class="wizard-progress">
+                    <div class="step active" data-step="1">
+                        <div class="step-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="step-label">Datos Básicos</div>
+                    </div>
+                    <div class="step" data-step="2">
+                        <div class="step-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="step-label">Dirección</div>
+                    </div>
+                    <div class="step" data-step="3">
+                        <div class="step-icon">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <div class="step-label">Comercial</div>
+                    </div>
+                    <div class="step" data-step="4">
+                        <div class="step-icon">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                        <div class="step-label">Configuración</div>
+                    </div>
+                </div>
+
+                <form id="createCustomerForm" class="wizard-form" autocomplete="off">
+                    <!-- Step 1: Datos Básicos -->
+                    <div class="wizard-step active" data-step="1">
+                        <div class="step-header">
+                            <h2><i class="fas fa-user"></i> Información Básica del Cliente</h2>
+                            <p>Datos principales para identificar al cliente en el sistema</p>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group required">
+                                <label for="business_name">
+                                    <span class="label-icon"><i class="fas fa-building"></i></span>
+                                    Razón Social
+                                    <span class="tooltip" title="Denominación social oficial de la empresa"><i class="fas fa-info-circle"></i></span>
+                                </label>
+                                <input type="text" 
+                                       id="business_name" 
+                                       name="business_name" 
+                                       placeholder="Ej: ACME Distribuciones S.L."
+                                       data-form-type="other"
+                                       autocomplete="new-password"
+                                       autocapitalize="off"
+                                       autocorrect="off"
+                                       spellcheck="false"
+                                       data-lpignore="true"
+                                       data-form-type="other"
+                                       required>
+                                <div class="field-status"></div>
+                            </div>
+                            
+                            <div class="form-group required">
+                                <label for="name">
+                                    <span class="label-icon"><i class="fas fa-tag"></i></span>
+                                    Nombre Comercial
+                                    <span class="tooltip" title="Nombre comercial que se autocompletará con la razón social"><i class="fas fa-info-circle"></i></span>
+                                </label>
+                                <input type="text" 
+                                       id="name" 
+                                       name="name" 
+                                       placeholder="Se autocompletará automáticamente"
+                                       data-form-type="other"
+                                       autocomplete="new-password"
+                                       autocapitalize="off"
+                                       autocorrect="off"
+                                       spellcheck="false"
+                                       data-lpignore="true"
+                                       data-form-type="other"
+                                       required>
+                                <div class="field-status"></div>
+                            </div>
+                            
+                            <div class="form-group required">
+                                <label for="vat_number">
+                                    <span class="label-icon"><i class="fas fa-id-card"></i></span>
+                                    CIF/NIF
+                                    <span class="tooltip" title="Número de identificación fiscal"><i class="fas fa-info-circle"></i></span>
+                                </label>
+                                <input type="text" 
+                                       id="vat_number" 
+                                       name="vat_number" 
+                                       placeholder="Ej: B12345678 o 12345678Z"
+                                       data-form-type="other"
+                                       autocomplete="new-password"
+                                       autocapitalize="off"
+                                       autocorrect="off"
+                                       spellcheck="false"
+                                       data-lpignore="true"
+                                       data-form-type="other"
+                                       required>
+                                <div class="field-status"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Dirección -->
+                    <div class="wizard-step" data-step="2">
+                        <div class="step-header">
+                            <h2><i class="fas fa-map-marker-alt"></i> Dirección y Ubicación</h2>
+                            <p>Información de contacto y localización del cliente</p>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="street_name">
+                                    <span class="label-icon"><i class="fas fa-road"></i></span>
+                                    Dirección Completa
+                                </label>
+                                <input type="text" 
+                                       id="street_name" 
+                                       name="street_name" 
+                                       placeholder="Ej: Calle Mayor, 123, 2º B"
+                                       autocomplete="off">
+                                <div class="field-status"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="city">
+                                    <span class="label-icon"><i class="fas fa-city"></i></span>
+                                    Ciudad
+                                </label>
+                                <input type="text" 
+                                       id="city" 
+                                       name="city" 
+                                       placeholder="Ej: Madrid"
+                                       autocomplete="off">
+                                <div class="field-status"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="postal_code">
+                                    <span class="label-icon"><i class="fas fa-mail-bulk"></i></span>
+                                    Código Postal
+                                </label>
+                                <input type="text" 
+                                       id="postal_code" 
+                                       name="postal_code" 
+                                       placeholder="Ej: 28001"
+                                       autocomplete="off">
+                                <div class="field-status"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="province_id">
+                                    <span class="label-icon"><i class="fas fa-map"></i></span>
+                                    Provincia
+                                </label>
+                                <select id="province_id" name="province_id">
+                                    <option value="">Seleccionar provincia...</option>
+                                    <option value="01">Álava</option>
+                                    <option value="02">Albacete</option>
+                                    <option value="03">Alicante</option>
+                                    <option value="04">Almería</option>
+                                    <option value="05">Ávila</option>
+                                    <option value="06">Badajoz</option>
+                                    <option value="07">Baleares</option>
+                                    <option value="08">Barcelona</option>
+                                    <option value="09">Burgos</option>
+                                    <option value="10">Cáceres</option>
+                                    <option value="11">Cádiz</option>
+                                    <option value="12">Castellón</option>
+                                    <option value="13">Ciudad Real</option>
+                                    <option value="14">Córdoba</option>
+                                    <option value="15">La Coruña</option>
+                                    <option value="16">Cuenca</option>
+                                    <option value="17">Girona</option>
+                                    <option value="18">Granada</option>
+                                    <option value="19">Guadalajara</option>
+                                    <option value="20">Guipúzcoa</option>
+                                    <option value="21">Huelva</option>
+                                    <option value="22">Huesca</option>
+                                    <option value="23">Jaén</option>
+                                    <option value="24">León</option>
+                                    <option value="25">Lleida</option>
+                                    <option value="26">La Rioja</option>
+                                    <option value="27">Lugo</option>
+                                    <option value="28">Madrid</option>
+                                    <option value="29">Málaga</option>
+                                    <option value="30">Murcia</option>
+                                    <option value="31">Navarra</option>
+                                    <option value="32">Orense</option>
+                                    <option value="33">Asturias</option>
+                                    <option value="34">Palencia</option>
+                                    <option value="35">Las Palmas</option>
+                                    <option value="36">Pontevedra</option>
+                                    <option value="37">Salamanca</option>
+                                    <option value="38">Santa Cruz de Tenerife</option>
+                                    <option value="39">Cantabria</option>
+                                    <option value="40">Segovia</option>
+                                    <option value="41">Sevilla</option>
+                                    <option value="42">Soria</option>
+                                    <option value="43">Tarragona</option>
+                                    <option value="44">Teruel</option>
+                                    <option value="45">Toledo</option>
+                                    <option value="46">Valencia</option>
+                                    <option value="47">Valladolid</option>
+                                    <option value="48">Vizcaya</option>
+                                    <option value="49">Zamora</option>
+                                    <option value="50">Zaragoza</option>
+                                    <option value="51">Ceuta</option>
+                                    <option value="52">Melilla</option>
+                                </select>
+                                <div class="field-status"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Configuración Comercial -->
+                    <div class="wizard-step" data-step="3">
+                        <div class="step-header">
+                            <h2><i class="fas fa-briefcase"></i> Configuración Comercial</h2>
+                            <p>Condiciones de pago y clasificación del cliente</p>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="payment_method_id">
+                                    <span class="label-icon"><i class="fas fa-credit-card"></i></span>
+                                    Método de Pago
+                                </label>
+                                <select id="payment_method_id" name="payment_method_id">
+                                    <option value="">Seleccionar método...</option>
+                                    <option value="001">Contado</option>
+                                    <option value="002">Reposición</option>
+                                    <option value="003">Contado Proforma</option>
+                                    <option value="004">Transferencia 30</option>
+                                    <option value="005">Transferencia 60</option>
+                                    <option value="006">Transfe.Proforma</option>
+                                    <option value="007" selected>Transferencia</option>
+                                    <option value="008">Transferencia 90 día</option>
+                                    <option value="009">Transferencia 85 día</option>
+                                    <option value="015">Transferencia 15</option>
+                                    <option value="020">Recibo 30 días</option>
+                                    <option value="021">Recibo 60 días</option>
+                                    <option value="029">Giro 15 días</option>
+                                    <option value="030">Giro 30 días</option>
+                                    <option value="031">Giro 60 días</option>
+                                    <option value="032">Giro 45 días</option>
+                                    <option value="033">Giro 90 días</option>
+                                    <option value="034">Giro 30/60 días</option>
+                                    <option value="035">Giro 30/60/90 días</option>
+                                    <option value="036">Giro 60/90 días</option>
+                                    <option value="039">Pagaré 30/60 días</option>
+                                    <option value="040">Pagaré 60 días</option>
+                                    <option value="041">Confirming 90 días</option>
+                                    <option value="042">Confirming 60 días</option>
+                                    <option value="055">Giro 7 días</option>
+                                    <option value="096">Tarjeta</option>
+                                    <option value="097">Klarna</option>
+                                    <option value="098">Bizum</option>
+                                    <option value="099">PayPal</option>
+                                    <option value="999">Contado</option>
+                                </select>
+                                <div class="field-status"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="tip_cli">
+                                    <span class="label-icon"><i class="fas fa-star"></i></span>
+                                    Tipo de Cliente
+                                </label>
+                                <select id="tip_cli" name="tip_cli">
+                                    <option value="">Seleccionar tipo...</option>
+                                    <option value="1">VIP</option>
+                                    <option value="2">Almacén</option>
+                                    <option value="3" selected>Profesional</option>
+                                </select>
+                                <div class="field-status"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Opciones -->
+                    <div class="wizard-step" data-step="4">
+                        <div class="step-header">
+                            <h2><i class="fas fa-cog"></i> Opciones y Configuración</h2>
+                            <p>Preferencias adicionales y configuración final del cliente</p>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="send_invoices" name="send_invoices">
+                                    <span class="checkmark"></span>
+                                    <span class="label-icon"><i class="fas fa-envelope"></i></span>
+                                    Enviar facturas por email
+                                </label>
+                            </div>
+                            
+                            <div class="form-group checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="send_newsletter" name="send_newsletter">
+                                    <span class="checkmark"></span>
+                                    <span class="label-icon"><i class="fas fa-newspaper"></i></span>
+                                    Enviar newsletter
+                                </label>
+                            </div>
+                            
+                            <div class="form-group checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="is_public_administration" name="is_public_administration">
+                                    <span class="checkmark"></span>
+                                    <span class="label-icon"><i class="fas fa-university"></i></span>
+                                    Administración pública
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Resumen final -->
+                        <div class="customer-summary">
+                            <h3><i class="fas fa-clipboard-check"></i> Resumen del Cliente</h3>
+                            <div class="summary-content">
+                                <div class="summary-item">
+                                    <strong>Empresa</strong>
+                                    <span id="summary-name">-</span>
+                                </div>
+                                <div class="summary-item">
+                                    <strong>CIF/NIF</strong>
+                                    <span id="summary-vat">-</span>
+                                </div>
+                                <div class="summary-item">
+                                    <strong>Tipo</strong>
+                                    <span id="summary-type">-</span>
+                                </div>
+                                <div class="summary-item">
+                                    <strong>Pago</strong>
+                                    <span id="summary-payment">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="wizard-navigation">
+                        <button type="button" class="btn-secondary" id="prevStep" style="display: none;">
+                            <i class="fas fa-arrow-left"></i> Anterior
+                        </button>
+                        <button type="button" class="btn-primary" id="nextStep">
+                            Siguiente <i class="fas fa-arrow-right"></i>
+                        </button>
+                        <button type="submit" class="btn-success" id="submitForm" style="display: none;">
+                            <i class="fas fa-check"></i> Crear Cliente
+                        </button>
+                        <button type="button" class="btn-outline" id="clearForm">
+                            <i class="fas fa-redo"></i> Limpiar Todo
+                        </button>
+                    </div>
+                </form>
+                
+                <div id="createCustomerResult" class="result-message" style="display: none;"></div>
+            </div>
+
+            <!-- Sales Orders Section -->
+            <div class="content-section" id="sales-orders">
+                <div class="header">
+                    <h1><i class="fas fa-clipboard-list"></i> Pedidos de Venta</h1>
+                    <p>Crear y gestionar pedidos de venta</p>
+                </div>
+
+                <form id="salesOrderForm" class="sales-order-form" autocomplete="off">
+                    <!-- Información del Cliente y Pedido -->
+                    <div class="form-section">
+                        <div class="form-grid">
+                            <div class="form-group required full-width">
+                                <label for="customer_search">
+                                    <span class="label-icon"><i class="fas fa-user"></i></span>
+                                    Cliente
+                                </label>
+                                <input type="text" 
+                                       id="customer_search" 
+                                       name="customer_search" 
+                                       placeholder="Buscar cliente por nombre, CIF, código o email..."
+                                       autocomplete="new-password"
+                                       autocapitalize="off"
+                                       autocorrect="off"
+                                       spellcheck="false"
+                                       data-lpignore="true"
+                                       required>
+                                <div class="field-status"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="customer_name">
+                                    <span class="label-icon"><i class="fas fa-building"></i></span>
+                                    Nombre
+                                </label>
+                                <input type="text" 
+                                       id="customer_name" 
+                                       name="customer_name"
+                                       autocomplete="new-password"
+                                       autocapitalize="off"
+                                       autocorrect="off"
+                                       spellcheck="false"
+                                       data-lpignore="true">
+                                <div class="field-status"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="customer_code">
+                                    <span class="label-icon"><i class="fas fa-barcode"></i></span>
+                                    Código
+                                </label>
+                                <input type="text" 
+                                       id="customer_code" 
+                                       name="customer_code"
+                                       autocomplete="new-password"
+                                       autocapitalize="off"
+                                       autocorrect="off"
+                                       spellcheck="false"
+                                       data-lpignore="true">
+                                <div class="field-status"></div>
+                            </div>
+                            
+                            <div class="form-group required">
+                                <label for="order_reference">
+                                    <span class="label-icon"><i class="fas fa-hashtag"></i></span>
+                                    Referencia de pedido
+                                </label>
+                                <input type="text" 
+                                       id="order_reference" 
+                                       name="order_reference" 
+                                       placeholder="Ej: PED-2024-0001"
+                                       autocomplete="new-password"
+                                       autocapitalize="off"
+                                       autocorrect="off"
+                                       spellcheck="false"
+                                       data-lpignore="true"
+                                       required>
+                                <div class="field-status"></div>
+                            </div>
+                            
+                            <div class="form-group required">
+                                <label for="order_date">
+                                    <span class="label-icon"><i class="fas fa-calendar"></i></span>
+                                    Fecha
+                                </label>
+                                <input type="date" 
+                                       id="order_date" 
+                                       name="order_date"
+                                       autocomplete="new-password"
+                                       required>
+                                <div class="field-status"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Productos -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <h3><i class="fas fa-box"></i> Productos</h3>
+                            <button type="button" class="btn-primary" id="addProductLine">
+                                <i class="fas fa-plus"></i> Añadir Línea
+                            </button>
+                        </div>
+                        
+                        <div class="products-table">
+                            <div class="table-header">
+                                <div class="col-reference">Referencia</div>
+                                <div class="col-description">Descripción</div>
+                                <div class="col-quantity">Cantidad</div>
+                                <div class="col-price">Precio</div>
+                                <div class="col-discount">Dto %</div>
+                                <div class="col-total">Total</div>
+                                <div class="col-actions">Acciones</div>
+                            </div>
+                            
+                            <div id="productLines">
+                                <!-- Las líneas de productos se añadirán dinámicamente aquí -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información Adicional -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-info-circle"></i> Información Adicional</h3>
+                        
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="order_notes">
+                                    <span class="label-icon"><i class="fas fa-sticky-note"></i></span>
+                                    Notas
+                                </label>
+                                <textarea id="order_notes" 
+                                         name="order_notes" 
+                                         placeholder="Notas adicionales para el pedido o presupuesto"
+                                         autocomplete="new-password"
+                                         autocapitalize="off"
+                                         autocorrect="off"
+                                         spellcheck="false"
+                                         data-lpignore="true"></textarea>
+                                <div class="field-status"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="shipping_cost">
+                                    <span class="label-icon"><i class="fas fa-truck"></i></span>
+                                    Gastos de envío (€)
+                                </label>
+                                <input type="number" 
+                                       id="shipping_cost" 
+                                       name="shipping_cost" 
+                                       step="0.01" 
+                                       min="0"
+                                       autocomplete="new-password"
+                                       autocapitalize="off"
+                                       autocorrect="off"
+                                       spellcheck="false"
+                                       data-lpignore="true">
+                                <div class="field-status"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="reference_2">
+                                    <span class="label-icon"><i class="fas fa-tag"></i></span>
+                                    Referencia 2 (opcional)
+                                </label>
+                                <input type="text" 
+                                       id="reference_2" 
+                                       name="reference_2" 
+                                       placeholder="Segunda referencia"
+                                       autocomplete="new-password"
+                                       autocapitalize="off"
+                                       autocorrect="off"
+                                       spellcheck="false"
+                                       data-lpignore="true">
+                                <div class="field-status"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="block_order" name="block_order">
+                                        <span class="checkmark"></span>
+                                        Bloquear pedido
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="block_invoice" name="block_invoice">
+                                        <span class="checkmark"></span>
+                                        Bloquear factura
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resumen -->
+                    <div class="order-summary">
+                        <h3><i class="fas fa-calculator"></i> Resumen</h3>
+                        <div class="summary-content">
+                            <div class="summary-line">
+                                <span>Subtotal</span>
+                                <span id="order_subtotal">€0.00</span>
+                            </div>
+                            <div class="summary-line">
+                                <span>Descuento</span>
+                                <span id="order_discount">€0.00</span>
+                            </div>
+                            <div class="summary-line">
+                                <span>IVA (21%)</span>
+                                <span id="order_tax">€0.00</span>
+                            </div>
+                            <div class="summary-line total">
+                                <span>Total</span>
+                                <span id="order_total">€0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="form-actions">
+                        <button type="button" class="btn-success" id="createOrder">
+                            <i class="fas fa-check"></i> Crear Pedido
+                        </button>
+                        <button type="button" class="btn-info" id="createQuote">
+                            <i class="fas fa-file-alt"></i> Crear Presupuesto
+                        </button>
+                        <button type="button" class="btn-outline" id="clearOrderForm">
+                            <i class="fas fa-redo"></i> Limpiar Todo
+                        </button>
+                    </div>
+                </form>
+                
+                <div id="salesOrderResult" class="result-message" style="display: none;"></div>
+            </div>
+
+            <!-- Invoices Section -->
+            <div class="content-section" id="invoices">
+                <div class="header">
+                    <h1><i class="fas fa-file-invoice"></i> Facturas</h1>
+                    <p>Listado y descarga de facturas en PDF</p>
+                </div>
+
+                <!-- Filtros de Búsqueda -->
+                <div class="search-section">
+                    <div class="search-controls">
+                        <div class="search-group">
+                            <label for="invoice_customer_search">
+                                <i class="fas fa-search"></i> Buscar Cliente
+                            </label>
+                            <input type="text" 
+                                   id="invoice_customer_search" 
+                                   placeholder="Buscar por nombre, CIF o código..."
+                                   autocomplete="new-password"
+                                   autocapitalize="off"
+                                   autocorrect="off"
+                                   spellcheck="false"
+                                   data-lpignore="true">
+                        </div>
+                        
+                        <div class="search-group">
+                            <label for="invoice_date_from">
+                                <i class="fas fa-calendar"></i> Desde
+                            </label>
+                            <input type="date" 
+                                   id="invoice_date_from"
+                                   autocomplete="new-password">
+                        </div>
+                        
+                        <div class="search-group">
+                            <label for="invoice_date_to">
+                                <i class="fas fa-calendar"></i> Hasta
+                            </label>
+                            <input type="date" 
+                                   id="invoice_date_to"
+                                   autocomplete="new-password">
+                        </div>
+                        
+                        <div class="search-actions">
+                            <button type="button" class="btn-primary" id="searchInvoicesBtn">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                            <button type="button" class="btn-outline" id="clearInvoiceFiltersBtn">
+                                <i class="fas fa-times"></i> Limpiar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estadísticas -->
+                <div class="stats-section">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-file-invoice"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="totalInvoicesCount">7,077</div>
+                            <div class="stat-label">Total Facturas</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-filter"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="filteredInvoicesCount">0</div>
+                            <div class="stat-label">Facturas Filtradas</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="downloadedInvoicesCount">0</div>
+                            <div class="stat-label">PDFs Descargados</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de Facturas -->
+                <div class="invoices-table-container">
+                    <div class="table-header">
+                        <div class="table-actions">
+                            <button type="button" class="btn-success" id="downloadAllInvoicesBtn" disabled>
+                                <i class="fas fa-download"></i> Descargar Todas
+                            </button>
+                            <button type="button" class="btn-info" id="exportInvoicesListBtn">
+                                <i class="fas fa-file-export"></i> Exportar Lista
+                            </button>
+                        </div>
+                        
+                        <div class="table-pagination">
+                            <button type="button" class="btn-outline" id="prevPageBtn" disabled>
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </button>
+                            <span id="pageInfo">Página 1 de 1</span>
+                            <button type="button" class="btn-outline" id="nextPageBtn" disabled>
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="invoices-table">
+                        <div class="table-header-row">
+                            <div class="col-select">
+                                <input type="checkbox" id="selectAllInvoices">
+                            </div>
+                            <div class="col-number">Número</div>
+                            <div class="col-date">Fecha</div>
+                            <div class="col-customer">Cliente</div>
+                            <div class="col-amount">Importe</div>
+                            <div class="col-status">Estado</div>
+                            <div class="col-actions">Acciones</div>
+                        </div>
+                        
+                        <div id="invoicesTableBody">
+                            <!-- Las facturas se cargarán dinámicamente aquí -->
+                            <div class="loading-message">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <span>Cargando facturas...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mensaje de Resultados -->
+                <div id="invoicesResult" class="result-message" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client Search Section -->
+    <div class="content-section" id="client-search">
+        <div class="header">
+            <h1><i class="fas fa-search"></i> Búsqueda Avanzada de Clientes</h1>
+            <p>Busca clientes y accede a sus documentos y albaranes</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Search Controls -->
+            <div class="search-section">
+                <h3><i class="fas fa-filter"></i> Filtros de Búsqueda</h3>
+                
+                <div class="client-search-controls">
+                    <div class="search-group">
+                        <label for="client_search_input">
+                            <i class="fas fa-user"></i> Buscar Cliente
+                        </label>
+                        <input type="text" 
+                               id="client_search_input" 
+                               placeholder="Escribe nombre del cliente..."
+                               autocomplete="off"
+                               autocapitalize="off"
+                               autocorrect="off"
+                               spellcheck="false">
+                        <div id="client_suggestions" class="client-suggestions"></div>
+                    </div>
+                    
+                    <div class="search-group">
+                        <label for="client_id_input">
+                            <i class="fas fa-hashtag"></i> ID Cliente
+                        </label>
+                        <input type="number" 
+                               id="client_id_input" 
+                               placeholder="ID del cliente"
+                               autocomplete="off">
+                    </div>
+                    
+                    <div class="search-actions">
+                        <button type="button" id="searchClientBtn" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Buscar
+                        </button>
+                        <button type="button" id="clearClientSearchBtn" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Limpiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Client Info Display -->
+            <div id="client_info_section" class="client-info-section" style="display: none;">
+                <h3><i class="fas fa-user-circle"></i> Información del Cliente</h3>
+                
+                <div class="client-info-card">
+                    <div class="client-basic-info">
+                        <div class="info-item">
+                            <label>ID:</label>
+                            <span id="client_display_id">-</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Nombre:</label>
+                            <span id="client_display_name">-</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Email:</label>
+                            <span id="client_display_email">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="client-actions">
+                        <button type="button" id="loadClientDocumentsBtn" class="btn btn-primary">
+                            <i class="fas fa-file-alt"></i> Ver Documentos
+                        </button>
+                        <button type="button" id="loadClientInvoicesBtn" class="btn btn-secondary">
+                            <i class="fas fa-file-invoice"></i> Ver Facturas
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents Table -->
+            <div id="client_documents_section" class="documents-section" style="display: none;">
+                <div class="documents-table-container">
+                    <div class="table-header">
+                        <h3><i class="fas fa-file-alt"></i> Documentos del Cliente</h3>
+                        <div class="table-actions">
+                            <button type="button" id="refreshDocumentsBtn" class="btn btn-secondary">
+                                <i class="fas fa-sync-alt"></i> Actualizar
+                            </button>
+                            <button type="button" id="downloadAllDocumentsBtn" class="btn btn-primary" disabled>
+                                <i class="fas fa-download"></i> Descargar Seleccionados (0)
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="documents-table">
+                        <div class="table-header-row">
+                            <div class="col-select">
+                                <input type="checkbox" id="selectAllDocuments">
+                            </div>
+                            <div class="col-type">Tipo</div>
+                            <div class="col-number">Número</div>
+                            <div class="col-date">Fecha</div>
+                            <div class="col-reference">Referencia</div>
+                            <div class="col-amount">Importe</div>
+                            <div class="col-actions">Acciones</div>
+                        </div>
+                        
+                        <div id="documentsTableBody">
+                            <div class="empty-message">
+                                <i class="fas fa-file-alt"></i>
+                                <h3>Selecciona un cliente</h3>
+                                <p>Busca y selecciona un cliente para ver sus documentos</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Message -->
+            <div id="clientSearchResult" class="result-message" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button class="fab" title="Ayuda">
+        <i class="fas fa-question"></i>
+    </button>
+
+    <script>
+        // Variables globales
+        let currentStep = 1;
+        const totalSteps = 4;
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeWizard();
+            setupEventListeners();
+            updateSummary();
+        });
+
+        function initializeWizard() {
+            updateStepDisplay();
+            updateNavigationButtons();
+        }
+
+        function setupEventListeners() {
+            // Navegación
+            document.getElementById('nextStep').addEventListener('click', nextStep);
+            document.getElementById('prevStep').addEventListener('click', prevStep);
+            document.getElementById('clearForm').addEventListener('click', clearForm);
+            document.getElementById('submitForm').addEventListener('click', submitForm);
+
+            // Auto-completado del CIF - autocompletar nombre comercial
+            document.getElementById('vat_number').addEventListener('input', function() {
+                const vat = this.value.trim().toUpperCase();
+                this.value = vat; // Convertir a mayúsculas automáticamente
+                
+                if (vat.length >= 8) {
+                    // Autocompletar nombre comercial basado en CIF
+                    const businessNameField = document.getElementById('business_name');
+                    if (!businessNameField.value || businessNameField.value === vat) {
+                        businessNameField.value = vat;
+                    }
+                    updateFieldStatus('vat_number', 'valid');
+                } else {
+                    updateFieldStatus('vat_number', 'invalid');
+                }
+                updateSummary();
+            });
+
+            // Actualizar resumen en tiempo real
+            const formInputs = document.querySelectorAll('#createCustomerForm input, #createCustomerForm select');
+            formInputs.forEach(input => {
+                input.addEventListener('change', updateSummary);
+                input.addEventListener('input', updateSummary);
+            });
+
+            // Navegación del sidebar
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const section = this.dataset.section;
+                    if (section) {
+                        switchSection(section);
+                    }
+                });
+            });
+        }
+
+        function nextStep() {
+            if (validateCurrentStep()) {
+                if (currentStep < totalSteps) {
+                    currentStep++;
+                    updateStepDisplay();
+                    updateNavigationButtons();
+                    markStepCompleted(currentStep - 1);
+                }
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStepDisplay();
+                updateNavigationButtons();
+            }
+        }
+
+        function updateStepDisplay() {
+            // Ocultar todos los pasos
+            document.querySelectorAll('.wizard-step').forEach(step => {
+                step.classList.remove('active');
+            });
+
+            // Mostrar paso actual
+            document.querySelector(`.wizard-step[data-step="${currentStep}"]`).classList.add('active');
+
+            // Actualizar indicadores de progreso
+            document.querySelectorAll('.step').forEach((step, index) => {
+                step.classList.remove('active');
+                if (index + 1 === currentStep) {
+                    step.classList.add('active');
+                }
+            });
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevStep');
+            const nextBtn = document.getElementById('nextStep');
+            const submitBtn = document.getElementById('submitForm');
+
+            prevBtn.style.display = currentStep > 1 ? 'flex' : 'none';
+            
+            if (currentStep === totalSteps) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'flex';
+            } else {
+                nextBtn.style.display = 'flex';
+                submitBtn.style.display = 'none';
+            }
+        }
+
+        function markStepCompleted(stepNumber) {
+            const step = document.querySelector(`.step[data-step="${stepNumber}"]`);
+            if (step) {
+                step.classList.add('completed');
+            }
+        }
+
+        function validateCurrentStep() {
+            const currentStepElement = document.querySelector(`.wizard-step[data-step="${currentStep}"]`);
+            const requiredFields = currentStepElement.querySelectorAll('input[required], select[required]');
+            
+            let isValid = true;
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    updateFieldStatus(field.id, 'invalid');
+                    isValid = false;
+                } else {
+                    updateFieldStatus(field.id, 'valid');
+                }
+            });
+
+            return isValid;
+        }
+
+        function updateFieldStatus(fieldId, status) {
+            const field = document.getElementById(fieldId);
+            const statusElement = field.parentElement.querySelector('.field-status');
+            
+            if (status === 'valid') {
+                statusElement.innerHTML = '<i class="fas fa-check" style="color: var(--status-success);"></i>';
+                field.style.borderColor = 'var(--status-success)';
+            } else if (status === 'invalid') {
+                statusElement.innerHTML = '<i class="fas fa-times" style="color: var(--status-error);"></i>';
+                field.style.borderColor = 'var(--status-error)';
+            } else {
+                statusElement.innerHTML = '';
+                field.style.borderColor = 'var(--neutral-300)';
+            }
+        }
+
+        function updateSummary() {
+            const businessName = document.getElementById('business_name').value || '-';
+            const vatNumber = document.getElementById('vat_number').value || '-';
+            const tipCli = document.getElementById('tip_cli');
+            const paymentMethod = document.getElementById('payment_method_id');
+
+            document.getElementById('summary-name').textContent = businessName;
+            document.getElementById('summary-vat').textContent = vatNumber;
+            document.getElementById('summary-type').textContent = tipCli.options[tipCli.selectedIndex]?.text || '-';
+            document.getElementById('summary-payment').textContent = paymentMethod.options[paymentMethod.selectedIndex]?.text || '-';
+        }
+
+        function clearForm() {
+            if (confirm('¿Está seguro de que desea limpiar todos los datos del formulario?')) {
+                document.getElementById('createCustomerForm').reset();
+                currentStep = 1;
+                updateStepDisplay();
+                updateNavigationButtons();
+                updateSummary();
+                
+                // Limpiar estados de validación
+                document.querySelectorAll('.field-status').forEach(status => {
+                    status.innerHTML = '';
+                });
+                document.querySelectorAll('input, select').forEach(field => {
+                    field.style.borderColor = 'var(--neutral-300)';
+                });
+                
+                // Limpiar pasos completados
+                document.querySelectorAll('.step').forEach(step => {
+                    step.classList.remove('completed');
+                });
+            }
+        }
+
+        function submitForm(e) {
+            e.preventDefault();
+            
+            if (!validateCurrentStep()) {
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitForm');
+            const originalText = submitBtn.innerHTML;
+            
+            // Mostrar loading
+            submitBtn.innerHTML = '<span class="loading"></span> Creando...';
+            submitBtn.disabled = true;
+
+            // Recopilar datos del formulario
+            const formData = {
+                business_name: document.getElementById('business_name').value,
+                name: document.getElementById('name').value,
+                vat_number: document.getElementById('vat_number').value,
+                city: document.getElementById('city').value,
+                street_name: document.getElementById('street_name').value,
+                postal_code: document.getElementById('postal_code').value,
+                province_id: document.getElementById('province_id').value,
+                payment_method_id: document.getElementById('payment_method_id').value,
+                tip_cli: document.getElementById('tip_cli').value,
+                send_invoices: document.getElementById('send_invoices').checked,
+                send_newsletter: document.getElementById('send_newsletter').checked,
+                is_public_administration: document.getElementById('is_public_administration').checked
+            };
+
+            // Enviar datos al backend
+            fetch('/api/customers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('createCustomerResult');
+                
+                if (data.status === 'success') {
+                    resultDiv.className = 'result-message success';
+                    resultDiv.innerHTML = '<i class="fas fa-check-circle"></i> ' + data.message;
+                    
+                    // Limpiar formulario después del éxito
+                    setTimeout(() => {
+                        clearForm();
+                    }, 2000);
+                } else {
+                    resultDiv.className = 'result-message error';
+                    resultDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + data.message;
+                }
+                
+                resultDiv.style.display = 'block';
+                
+                // Auto-ocultar mensaje después de 8 segundos
+                setTimeout(() => {
+                    resultDiv.style.display = 'none';
+                }, 8000);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const resultDiv = document.getElementById('createCustomerResult');
+                resultDiv.className = 'result-message error';
+                resultDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error de conexión: ' + error.message;
+                resultDiv.style.display = 'block';
+            })
+            .finally(() => {
+                // Restaurar botón
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        }
+
+        function switchSection(sectionId) {
+            try {
+                // Actualizar navegación
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                const navElement = document.querySelector(`[data-section="${sectionId}"]`);
+                if (navElement) {
+                    navElement.classList.add('active');
+                }
+
+                // Mostrar sección correspondiente
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                const sectionElement = document.getElementById(sectionId);
+                if (sectionElement) {
+                    sectionElement.classList.add('active');
+                } else {
+                    console.error(`Sección no encontrada: ${sectionId}`);
+                    return;
+                }
+                
+                // Cargar datos específicos de la sección
+                if (sectionId === 'invoices') {
+                    // Cargar facturas automáticamente al acceder a la sección
+                    if (currentInvoices.length === 0) {
+                        loadAllInvoices();
+                    }
+                }
+            } catch (error) {
+                console.error('Error en switchSection:', error);
+            }
+        }
+        
+        // Hacer la función switchSection globalmente accesible
+        window.switchSection = switchSection;
+
+        // FAB functionality
+        document.querySelector('.fab').addEventListener('click', function() {
+            alert('Ayuda: Use los pasos del asistente para crear un cliente. Todos los campos marcados con * son obligatorios.');
+        });
+
+        // Autocompletado del Nombre Comercial basado en Razón Social
+        document.addEventListener('DOMContentLoaded', function() {
+            const razonSocialInput = document.getElementById('business_name');
+            const nombreComercialInput = document.getElementById('name');
+            
+            if (razonSocialInput && nombreComercialInput) {
+                razonSocialInput.addEventListener('input', function() {
+                    // Autocompletar el nombre comercial con el valor de razón social
+                    nombreComercialInput.value = this.value;
+                    
+                    // Disparar evento de input para que se actualicen las validaciones
+                    const event = new Event('input', { bubbles: true });
+                    nombreComercialInput.dispatchEvent(event);
+                });
+            }
+
+            // Inicializar funcionalidad de Sales Orders
+            initializeSalesOrders();
+        });
+
+        // ===== SALES ORDERS FUNCTIONALITY =====
+        
+        // API Configuration
+        const API_CONFIG = {
+            baseUrl: 'http://buyled.clonico.es:8181/gomanage',
+            username: 'distri',
+            password: 'GOtmt%',
+            token: null
+        };
+
+        let productLineCounter = 0;
+
+        function initializeSalesOrders() {
+            // Inicializar fecha actual
+            const today = new Date().toISOString().split('T')[0];
+            const orderDateInput = document.getElementById('order_date');
+            if (orderDateInput) {
+                orderDateInput.value = today;
+            }
+
+            // Agregar primera línea de producto
+            addProductLine();
+
+            // Event listeners
+            setupSalesOrderEventListeners();
+        }
+
+        function setupSalesOrderEventListeners() {
+            // Botón añadir línea de producto
+            const addLineBtn = document.getElementById('addProductLine');
+            if (addLineBtn) {
+                addLineBtn.addEventListener('click', addProductLine);
+            }
+
+            // Botones de acción
+            const createOrderBtn = document.getElementById('createOrder');
+            const createQuoteBtn = document.getElementById('createQuote');
+            const clearFormBtn = document.getElementById('clearOrderForm');
+
+            if (createOrderBtn) {
+                createOrderBtn.addEventListener('click', () => createSalesOrder('order'));
+            }
+            if (createQuoteBtn) {
+                createQuoteBtn.addEventListener('click', () => createSalesOrder('quote'));
+            }
+            if (clearFormBtn) {
+                clearFormBtn.addEventListener('click', clearSalesOrderForm);
+            }
+
+            // Búsqueda de clientes
+            const customerSearchInput = document.getElementById('customer_search');
+            if (customerSearchInput) {
+                customerSearchInput.addEventListener('input', debounce(searchCustomers, 300));
+            }
+
+            // Actualizar cálculos en tiempo real
+            const shippingCostInput = document.getElementById('shipping_cost');
+            if (shippingCostInput) {
+                shippingCostInput.addEventListener('input', updateOrderSummary);
+            }
+        }
+
+        // Autenticación con la API
+        async function authenticateAPI() {
+            if (API_CONFIG.token) {
+                return API_CONFIG.token;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('j_username', API_CONFIG.username);
+                formData.append('j_password', API_CONFIG.password);
+
+                const response = await fetch(`${API_CONFIG.baseUrl}/static/auth/j_spring_security_check`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    // Extraer token de la respuesta o cookies
+                    const cookies = response.headers.get('set-cookie');
+                    if (cookies) {
+                        const tokenMatch = cookies.match(/JSESSIONID=([^;]+)/);
+                        if (tokenMatch) {
+                            API_CONFIG.token = tokenMatch[1];
+                            return API_CONFIG.token;
+                        }
+                    }
+                }
+                throw new Error('Authentication failed');
+            } catch (error) {
+                console.error('Error authenticating:', error);
+                showSalesOrderMessage('Error de autenticación con la API', 'error');
+                return null;
+            }
+        }
+
+        // Búsqueda de clientes
+        async function searchCustomers() {
+            const searchTerm = document.getElementById('customer_search').value.trim();
+            if (searchTerm.length < 2) return;
+
+            try {
+                const token = await authenticateAPI();
+                if (!token) return;
+
+                // Simular búsqueda de clientes (implementar endpoint real cuando esté disponible)
+                const customers = [
+                    { id: 443, name: 'OK SOLUCIONES', code: 'OK001', cif: 'B12345678' },
+                    { id: 444, name: 'ACME DISTRIBUCIONES', code: 'ACME01', cif: 'B87654321' }
+                ];
+
+                const filteredCustomers = customers.filter(customer => 
+                    customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    customer.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    customer.cif.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+
+                displayCustomerSuggestions(filteredCustomers);
+            } catch (error) {
+                console.error('Error searching customers:', error);
+            }
+        }
+
+        function displayCustomerSuggestions(customers) {
+            // Crear dropdown de sugerencias (implementación básica)
+            let dropdown = document.getElementById('customer-dropdown');
+            if (!dropdown) {
+                dropdown = document.createElement('div');
+                dropdown.id = 'customer-dropdown';
+                dropdown.style.cssText = `
+                    position: absolute;
+                    top: 100%;
+                    left: 0;
+                    right: 0;
+                    background: white;
+                    border: 1px solid #ddd;
+                    border-radius: 6px;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                    max-height: 200px;
+                    overflow-y: auto;
+                    z-index: 1000;
+                `;
+                document.getElementById('customer_search').parentNode.style.position = 'relative';
+                document.getElementById('customer_search').parentNode.appendChild(dropdown);
+            }
+
+            dropdown.innerHTML = '';
+            customers.forEach(customer => {
+                const item = document.createElement('div');
+                item.style.cssText = 'padding: 10px; cursor: pointer; border-bottom: 1px solid #eee;';
+                item.innerHTML = `<strong>${customer.name}</strong><br><small>${customer.code} - ${customer.cif}</small>`;
+                item.addEventListener('click', () => selectCustomer(customer));
+                dropdown.appendChild(item);
+            });
+        }
+
+        function selectCustomer(customer) {
+            document.getElementById('customer_search').value = customer.name;
+            document.getElementById('customer_name').value = customer.name;
+            document.getElementById('customer_code').value = customer.code;
+            
+            // Ocultar dropdown
+            const dropdown = document.getElementById('customer-dropdown');
+            if (dropdown) {
+                dropdown.style.display = 'none';
+            }
+        }
+
+        // Agregar línea de producto
+        function addProductLine() {
+            productLineCounter++;
+            const productLines = document.getElementById('productLines');
+            
+            const lineDiv = document.createElement('div');
+            lineDiv.className = 'product-line';
+            lineDiv.dataset.lineId = productLineCounter;
+            
+            lineDiv.innerHTML = `
+                <input type="text" 
+                       placeholder="REF001" 
+                       class="product-reference"
+                       autocomplete="new-password"
+                       autocapitalize="off"
+                       autocorrect="off"
+                       spellcheck="false"
+                       data-lpignore="true">
+                <input type="text" 
+                       placeholder="Descripción del producto" 
+                       class="product-description"
+                       autocomplete="new-password"
+                       autocapitalize="off"
+                       autocorrect="off"
+                       spellcheck="false"
+                       data-lpignore="true">
+                <div class="quantity-controls">
+                    <button type="button" class="quantity-btn" onclick="changeQuantity(${productLineCounter}, -1)">-</button>
+                    <input type="number" 
+                           value="1" 
+                           min="0" 
+                           class="quantity-input"
+                           autocomplete="new-password"
+                           onchange="updateLineTotal(${productLineCounter})">
+                    <button type="button" class="quantity-btn" onclick="changeQuantity(${productLineCounter}, 1)">+</button>
+                </div>
+                <input type="number" 
+                       placeholder="0.00" 
+                       step="0.01" 
+                       min="0" 
+                       class="product-price"
+                       autocomplete="new-password"
+                       onchange="updateLineTotal(${productLineCounter})">
+                <input type="number" 
+                       placeholder="0" 
+                       step="0.01" 
+                       min="0" 
+                       max="100" 
+                       class="product-discount"
+                       autocomplete="new-password"
+                       onchange="updateLineTotal(${productLineCounter})">
+                <span class="line-total">€0.00</span>
+                <button type="button" class="delete-line-btn" onclick="removeProductLine(${productLineCounter})">🗑</button>
+            `;
+            
+            productLines.appendChild(lineDiv);
+        }
+
+        // Cambiar cantidad con botones +/-
+        function changeQuantity(lineId, change) {
+            const line = document.querySelector(`[data-line-id="${lineId}"]`);
+            const quantityInput = line.querySelector('.quantity-input');
+            const currentValue = parseInt(quantityInput.value) || 0;
+            const newValue = Math.max(0, currentValue + change);
+            quantityInput.value = newValue;
+            updateLineTotal(lineId);
+        }
+
+        // Eliminar línea de producto
+        function removeProductLine(lineId) {
+            const line = document.querySelector(`[data-line-id="${lineId}"]`);
+            if (line) {
+                line.remove();
+                updateOrderSummary();
+            }
+        }
+
+        // Actualizar total de línea
+        function updateLineTotal(lineId) {
+            const line = document.querySelector(`[data-line-id="${lineId}"]`);
+            const quantity = parseFloat(line.querySelector('.quantity-input').value) || 0;
+            const price = parseFloat(line.querySelector('.product-price').value) || 0;
+            const discount = parseFloat(line.querySelector('.product-discount').value) || 0;
+            
+            const subtotal = quantity * price;
+            const discountAmount = subtotal * (discount / 100);
+            const total = subtotal - discountAmount;
+            
+            line.querySelector('.line-total').textContent = `€${total.toFixed(2)}`;
+            updateOrderSummary();
+        }
+
+        // Actualizar resumen del pedido
+        function updateOrderSummary() {
+            let subtotal = 0;
+            let totalDiscount = 0;
+            
+            document.querySelectorAll('.product-line').forEach(line => {
+                const quantity = parseFloat(line.querySelector('.quantity-input').value) || 0;
+                const price = parseFloat(line.querySelector('.product-price').value) || 0;
+                const discount = parseFloat(line.querySelector('.product-discount').value) || 0;
+                
+                const lineSubtotal = quantity * price;
+                const lineDiscountAmount = lineSubtotal * (discount / 100);
+                
+                subtotal += lineSubtotal;
+                totalDiscount += lineDiscountAmount;
+            });
+            
+            const shippingCost = parseFloat(document.getElementById('shipping_cost').value) || 0;
+            const netAmount = subtotal - totalDiscount + shippingCost;
+            const taxAmount = netAmount * 0.21; // IVA 21%
+            const total = netAmount + taxAmount;
+            
+            document.getElementById('order_subtotal').textContent = `€${subtotal.toFixed(2)}`;
+            document.getElementById('order_discount').textContent = `€${totalDiscount.toFixed(2)}`;
+            document.getElementById('order_tax').textContent = `€${taxAmount.toFixed(2)}`;
+            document.getElementById('order_total').textContent = `€${total.toFixed(2)}`;
+        }
+
+        // Crear pedido o presupuesto
+        async function createSalesOrder(type) {
+            const formData = collectSalesOrderData();
+            if (!validateSalesOrderData(formData)) {
+                return;
+            }
+
+            const button = type === 'order' ? document.getElementById('createOrder') : document.getElementById('createQuote');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+            button.disabled = true;
+
+            try {
+                const token = await authenticateAPI();
+                if (!token) {
+                    throw new Error('No se pudo autenticar con la API');
+                }
+
+                // Simular creación del pedido/presupuesto
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                const message = type === 'order' 
+                    ? `Pedido ${formData.reference} creado exitosamente`
+                    : `Presupuesto ${formData.reference} creado exitosamente`;
+                
+                showSalesOrderMessage(message, 'success');
+                
+                // Limpiar formulario después del éxito
+                setTimeout(() => {
+                    clearSalesOrderForm();
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Error creating sales order:', error);
+                showSalesOrderMessage('Error al crear el ' + (type === 'order' ? 'pedido' : 'presupuesto'), 'error');
+            } finally {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        }
+
+        // Recopilar datos del formulario
+        function collectSalesOrderData() {
+            const productLines = [];
+            document.querySelectorAll('.product-line').forEach(line => {
+                const reference = line.querySelector('.product-reference').value;
+                const description = line.querySelector('.product-description').value;
+                const quantity = parseFloat(line.querySelector('.quantity-input').value) || 0;
+                const price = parseFloat(line.querySelector('.product-price').value) || 0;
+                const discount = parseFloat(line.querySelector('.product-discount').value) || 0;
+                
+                if (reference && description && quantity > 0) {
+                    productLines.push({
+                        reference,
+                        description,
+                        quantity,
+                        price,
+                        discount
+                    });
+                }
+            });
+
+            return {
+                customer: document.getElementById('customer_search').value,
+                customerName: document.getElementById('customer_name').value,
+                customerCode: document.getElementById('customer_code').value,
+                reference: document.getElementById('order_reference').value,
+                date: document.getElementById('order_date').value,
+                notes: document.getElementById('order_notes').value,
+                shippingCost: parseFloat(document.getElementById('shipping_cost').value) || 0,
+                reference2: document.getElementById('reference_2').value,
+                blockOrder: document.getElementById('block_order').checked,
+                blockInvoice: document.getElementById('block_invoice').checked,
+                productLines
+            };
+        }
+
+        // Validar datos del formulario
+        function validateSalesOrderData(data) {
+            if (!data.customer) {
+                showSalesOrderMessage('Por favor, seleccione un cliente', 'error');
+                return false;
+            }
+            if (!data.reference) {
+                showSalesOrderMessage('Por favor, ingrese una referencia de pedido', 'error');
+                return false;
+            }
+            if (!data.date) {
+                showSalesOrderMessage('Por favor, seleccione una fecha', 'error');
+                return false;
+            }
+            if (data.productLines.length === 0) {
+                showSalesOrderMessage('Por favor, agregue al menos un producto', 'error');
+                return false;
+            }
+            return true;
+        }
+
+        // Limpiar formulario
+        function clearSalesOrderForm() {
+            document.getElementById('salesOrderForm').reset();
+            document.getElementById('productLines').innerHTML = '';
+            productLineCounter = 0;
+            addProductLine();
+            updateOrderSummary();
+            
+            // Restablecer fecha actual
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('order_date').value = today;
+        }
+
+        // Mostrar mensajes
+        function showSalesOrderMessage(message, type) {
+            const resultDiv = document.getElementById('salesOrderResult');
+            resultDiv.className = `result-message ${type}`;
+            resultDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+            resultDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                resultDiv.style.display = 'none';
+            }, 8000);
+         }
+        
+        // ===== INVOICES FUNCTIONALITY =====
+        
+        // Variables globales para facturas
+        let currentInvoices = [];
+        let filteredInvoices = [];
+        let currentPage = 1;
+        let itemsPerPage = 20;
+        let selectedInvoices = new Set();
+        let downloadedCount = 0;
+        
+        // API Configuration
+        const API_CONFIG = {
+            baseUrl: 'http://buyled.clonico.es:8181/gomanage',
+            username: 'distri',
+            password: 'GOtmt%',
+            token: null,
+            tokenExpiry: null
+        };
+        
+        // Autenticación automática
+        async function authenticateAPI() {
+            try {
+                const formData = new FormData();
+                formData.append('j_username', API_CONFIG.username);
+                formData.append('j_password', API_CONFIG.password);
+                
+                const response = await fetch(`${API_CONFIG.baseUrl}/static/auth/j_spring_security_check`, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    // Extraer token del header de respuesta
+                    const authHeader = response.headers.get('Authorization') || response.headers.get('X-Auth-Token');
+                    if (authHeader) {
+                        API_CONFIG.token = authHeader.replace('OECP ', '');
+                    } else {
+                        // Intentar obtener token de cookies
+                        const cookies = document.cookie.split(';');
+                        for (let cookie of cookies) {
+                            const [name, value] = cookie.trim().split('=');
+                            if (name === 'JSESSIONID' || name === 'auth-token') {
+                                API_CONFIG.token = value;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    API_CONFIG.tokenExpiry = Date.now() + (55 * 60 * 1000); // 55 minutos
+                    console.log('Autenticación exitosa');
+                    return true;
+                } else {
+                    throw new Error('Error de autenticación');
+                }
+            } catch (error) {
+                console.error('Error en autenticación:', error);
+                showInvoicesMessage('Error de autenticación con la API', 'error');
+                return false;
+            }
+        }
+        
+        // Verificar y renovar token si es necesario
+        async function ensureValidToken() {
+            if (!API_CONFIG.token || Date.now() >= API_CONFIG.tokenExpiry) {
+                return await authenticateAPI();
+            }
+            return true;
+        }
+        
+        // Obtener todas las facturas
+        async function loadAllInvoices() {
+            if (!await ensureValidToken()) return;
+            
+            try {
+                showInvoicesLoading(true);
+                
+                const response = await fetch(`${API_CONFIG.baseUrl}/web/data/Apitmt-sales-invoices/List?size=100&sort=date=desc`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `OECP ${API_CONFIG.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    currentInvoices = data.data || data || [];
+                    filteredInvoices = [...currentInvoices];
+                    
+                    updateInvoicesStats();
+                    renderInvoicesTable();
+                    showInvoicesMessage(`${currentInvoices.length} facturas cargadas exitosamente`, 'success');
+                } else {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('Error cargando facturas:', error);
+                showInvoicesMessage('Error al cargar las facturas', 'error');
+                showEmptyInvoicesMessage('Error al cargar facturas');
+            } finally {
+                showInvoicesLoading(false);
+            }
+        }
+        
+        // Buscar facturas por cliente
+        async function searchInvoicesByCustomer(customerId) {
+            if (!await ensureValidToken()) return;
+            
+            try {
+                showInvoicesLoading(true);
+                
+                const response = await fetch(`${API_CONFIG.baseUrl}/web/data/Apitmt-sales-invoices/List?customer_id=${customerId}&size=50&sort=date=desc`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `OECP ${API_CONFIG.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const invoices = data.data || data || [];
+                    
+                    filteredInvoices = invoices;
+                    updateInvoicesStats();
+                    renderInvoicesTable();
+                    showInvoicesMessage(`${invoices.length} facturas encontradas para el cliente`, 'success');
+                } else {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('Error buscando facturas:', error);
+                showInvoicesMessage('Error al buscar facturas del cliente', 'error');
+            } finally {
+                showInvoicesLoading(false);
+            }
+        }
+        
+        // Descargar PDF de factura
+        async function downloadInvoicePDF(uniqueId, invoiceNumber = 'factura') {
+            if (!await ensureValidToken()) return;
+            
+            try {
+                const response = await fetch(`${API_CONFIG.baseUrl}/web/data/apitmt-sales-invoices/PDF?unique_id=${uniqueId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `OECP ${API_CONFIG.token}`
+                    },
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `factura_${invoiceNumber}_${uniqueId}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    downloadedCount++;
+                    updateDownloadedCount();
+                    showInvoicesMessage('PDF descargado exitosamente', 'success');
+                } else {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('Error descargando PDF:', error);
+                showInvoicesMessage('Error al descargar el PDF', 'error');
+            }
+        }
+        
+        // Renderizar tabla de facturas
+        function renderInvoicesTable() {
+            const tableBody = document.getElementById('invoicesTableBody');
+            
+            if (filteredInvoices.length === 0) {
+                showEmptyInvoicesMessage('No se encontraron facturas');
+                return;
+            }
+            
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageInvoices = filteredInvoices.slice(startIndex, endIndex);
+            
+            const html = pageInvoices.map(invoice => {
+                const isSelected = selectedInvoices.has(invoice.unique_id || invoice.id);
+                const status = getInvoiceStatus(invoice);
+                const amount = formatCurrency(invoice.total_amount || invoice.amount || 0);
+                
+                return `
+                    <div class="invoice-row ${isSelected ? 'selected' : ''}" data-invoice-id="${invoice.unique_id || invoice.id}">
+                        <div class="col-select">
+                            <input type="checkbox" 
+                                   ${isSelected ? 'checked' : ''} 
+                                   onchange="toggleInvoiceSelection('${invoice.unique_id || invoice.id}')">
+                        </div>
+                        <div class="col-number">
+                            <span class="invoice-number">${invoice.number || invoice.invoice_number || 'N/A'}</span>
+                        </div>
+                        <div class="col-date">
+                            <span class="invoice-date">${formatDate(invoice.date || invoice.invoice_date)}</span>
+                        </div>
+                        <div class="col-customer">
+                            <span class="invoice-customer">${invoice.customer_name || invoice.client_name || 'Cliente no especificado'}</span>
+                        </div>
+                        <div class="col-amount">
+                            <span class="invoice-amount">${amount}</span>
+                        </div>
+                        <div class="col-status">
+                            <span class="invoice-status ${status.class}">${status.text}</span>
+                        </div>
+                        <div class="col-actions">
+                            <div class="invoice-actions">
+                                <button type="button" 
+                                        class="btn-download" 
+                                        onclick="downloadInvoicePDF('${invoice.unique_id || invoice.id}', '${invoice.number || invoice.invoice_number || 'factura'}')"
+                                        title="Descargar PDF">
+                                    <i class="fas fa-download"></i> PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            tableBody.innerHTML = html;
+            updatePagination();
+        }
+        
+        // Funciones auxiliares
+        function getInvoiceStatus(invoice) {
+            const status = invoice.status || invoice.state || 'unknown';
+            switch (status.toLowerCase()) {
+                case 'paid':
+                case 'pagado':
+                    return { class: 'status-paid', text: 'Pagado' };
+                case 'pending':
+                case 'pendiente':
+                    return { class: 'status-pending', text: 'Pendiente' };
+                case 'overdue':
+                case 'vencido':
+                    return { class: 'status-overdue', text: 'Vencido' };
+                default:
+                    return { class: 'status-pending', text: 'Pendiente' };
+            }
+        }
+        
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('es-ES', {
+                style: 'currency',
+                currency: 'EUR'
+            }).format(amount);
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-ES');
+        }
+        
+        function updateInvoicesStats() {
+            document.getElementById('totalInvoicesCount').textContent = currentInvoices.length.toLocaleString();
+            document.getElementById('filteredInvoicesCount').textContent = filteredInvoices.length.toLocaleString();
+        }
+        
+        function updateDownloadedCount() {
+            document.getElementById('downloadedInvoicesCount').textContent = downloadedCount.toLocaleString();
+        }
+        
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredInvoices.length / itemsPerPage);
+            document.getElementById('pageInfo').textContent = `Página ${currentPage} de ${totalPages}`;
+            
+            document.getElementById('prevPageBtn').disabled = currentPage <= 1;
+            document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
+        }
+        
+        function showInvoicesLoading(show) {
+            const tableBody = document.getElementById('invoicesTableBody');
+            if (show) {
+                tableBody.innerHTML = `
+                    <div class="loading-message">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>Cargando facturas...</span>
+                    </div>
+                `;
+            }
+        }
+        
+        function showEmptyInvoicesMessage(message) {
+            const tableBody = document.getElementById('invoicesTableBody');
+            tableBody.innerHTML = `
+                <div class="empty-message">
+                    <i class="fas fa-file-invoice"></i>
+                    <h3>${message}</h3>
+                    <p>No hay facturas que mostrar con los filtros actuales</p>
+                </div>
+            `;
+        }
+        
+        function showInvoicesMessage(message, type) {
+            const resultDiv = document.getElementById('invoicesResult');
+            resultDiv.className = `result-message ${type}`;
+            resultDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+            resultDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                resultDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Funciones de selección
+        function toggleInvoiceSelection(invoiceId) {
+            if (selectedInvoices.has(invoiceId)) {
+                selectedInvoices.delete(invoiceId);
+            } else {
+                selectedInvoices.add(invoiceId);
+            }
+            
+            updateSelectAllCheckbox();
+            updateDownloadAllButton();
+            renderInvoicesTable();
+        }
+        
+        function toggleSelectAllInvoices() {
+            const selectAllCheckbox = document.getElementById('selectAllInvoices');
+            const pageInvoices = getPageInvoices();
+            
+            if (selectAllCheckbox.checked) {
+                pageInvoices.forEach(invoice => {
+                    selectedInvoices.add(invoice.unique_id || invoice.id);
+                });
+            } else {
+                pageInvoices.forEach(invoice => {
+                    selectedInvoices.delete(invoice.unique_id || invoice.id);
+                });
+            }
+            
+            updateDownloadAllButton();
+            renderInvoicesTable();
+        }
+        
+        function updateSelectAllCheckbox() {
+            const selectAllCheckbox = document.getElementById('selectAllInvoices');
+            const pageInvoices = getPageInvoices();
+            const selectedPageInvoices = pageInvoices.filter(invoice => 
+                selectedInvoices.has(invoice.unique_id || invoice.id)
+            );
+            
+            selectAllCheckbox.checked = pageInvoices.length > 0 && selectedPageInvoices.length === pageInvoices.length;
+            selectAllCheckbox.indeterminate = selectedPageInvoices.length > 0 && selectedPageInvoices.length < pageInvoices.length;
+        }
+        
+        function updateDownloadAllButton() {
+            const downloadAllBtn = document.getElementById('downloadAllInvoicesBtn');
+            downloadAllBtn.disabled = selectedInvoices.size === 0;
+            downloadAllBtn.innerHTML = `<i class="fas fa-download"></i> Descargar Seleccionadas (${selectedInvoices.size})`;
+        }
+        
+        function getPageInvoices() {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            return filteredInvoices.slice(startIndex, endIndex);
+        }
+        
+        // Event Listeners para facturas
+        document.addEventListener('DOMContentLoaded', function() {
+            // Botones de búsqueda
+            document.getElementById('searchInvoicesBtn')?.addEventListener('click', function() {
+                const customerSearch = document.getElementById('invoice_customer_search').value.trim();
+                const dateFrom = document.getElementById('invoice_date_from').value;
+                const dateTo = document.getElementById('invoice_date_to').value;
+                
+                if (customerSearch) {
+                    // Buscar por cliente específico (implementar búsqueda por nombre)
+                    filterInvoicesByText(customerSearch);
+                } else {
+                    // Aplicar filtros de fecha
+                    filterInvoicesByDate(dateFrom, dateTo);
+                }
+            });
+            
+            document.getElementById('clearInvoiceFiltersBtn')?.addEventListener('click', function() {
+                document.getElementById('invoice_customer_search').value = '';
+                document.getElementById('invoice_date_from').value = '';
+                document.getElementById('invoice_date_to').value = '';
+                
+                filteredInvoices = [...currentInvoices];
+                currentPage = 1;
+                updateInvoicesStats();
+                renderInvoicesTable();
+            });
+            
+            // Paginación
+            document.getElementById('prevPageBtn')?.addEventListener('click', function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderInvoicesTable();
+                }
+            });
+            
+            document.getElementById('nextPageBtn')?.addEventListener('click', function() {
+                const totalPages = Math.ceil(filteredInvoices.length / itemsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderInvoicesTable();
+                }
+            });
+            
+            // Selección múltiple
+            document.getElementById('selectAllInvoices')?.addEventListener('change', toggleSelectAllInvoices);
+            
+            // Descargar todas las seleccionadas
+            document.getElementById('downloadAllInvoicesBtn')?.addEventListener('click', async function() {
+                if (selectedInvoices.size === 0) return;
+                
+                const selectedArray = Array.from(selectedInvoices);
+                showInvoicesMessage(`Iniciando descarga de ${selectedArray.length} facturas...`, 'info');
+                
+                for (let i = 0; i < selectedArray.length; i++) {
+                    const invoiceId = selectedArray[i];
+                    const invoice = currentInvoices.find(inv => (inv.unique_id || inv.id) === invoiceId);
+                    
+                    if (invoice) {
+                        await downloadInvoicePDF(invoiceId, invoice.number || invoice.invoice_number || `factura_${i+1}`);
+                        
+                        // Pequeña pausa entre descargas
+                        if (i < selectedArray.length - 1) {
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                        }
+                    }
+                }
+                
+                showInvoicesMessage(`${selectedArray.length} facturas descargadas exitosamente`, 'success');
+            });
+            
+            // Exportar lista
+            document.getElementById('exportInvoicesListBtn')?.addEventListener('click', function() {
+                exportInvoicesList();
+            });
+        });
+        
+        // Filtros
+        function filterInvoicesByText(searchText) {
+            const search = searchText.toLowerCase();
+            filteredInvoices = currentInvoices.filter(invoice => {
+                const customerName = (invoice.customer_name || invoice.client_name || '').toLowerCase();
+                const invoiceNumber = (invoice.number || invoice.invoice_number || '').toLowerCase();
+                const cif = (invoice.customer_cif || invoice.client_cif || '').toLowerCase();
+                
+                return customerName.includes(search) || 
+                       invoiceNumber.includes(search) || 
+                       cif.includes(search);
+            });
+            
+            currentPage = 1;
+            updateInvoicesStats();
+            renderInvoicesTable();
+        }
+        
+        function filterInvoicesByDate(dateFrom, dateTo) {
+            filteredInvoices = currentInvoices.filter(invoice => {
+                const invoiceDate = new Date(invoice.date || invoice.invoice_date);
+                
+                if (dateFrom && invoiceDate < new Date(dateFrom)) return false;
+                if (dateTo && invoiceDate > new Date(dateTo)) return false;
+                
+                return true;
+            });
+            
+            currentPage = 1;
+            updateInvoicesStats();
+            renderInvoicesTable();
+        }
+        
+        // Exportar lista de facturas
+        function exportInvoicesList() {
+            const csvContent = generateInvoicesCSV();
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `facturas_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showInvoicesMessage('Lista de facturas exportada exitosamente', 'success');
+        }
+        
+        function generateInvoicesCSV() {
+            const headers = ['Número', 'Fecha', 'Cliente', 'Importe', 'Estado', 'ID Único'];
+            const rows = filteredInvoices.map(invoice => [
+                invoice.number || invoice.invoice_number || 'N/A',
+                formatDate(invoice.date || invoice.invoice_date),
+                invoice.customer_name || invoice.client_name || 'Cliente no especificado',
+                invoice.total_amount || invoice.amount || 0,
+                getInvoiceStatus(invoice).text,
+                invoice.unique_id || invoice.id || 'N/A'
+            ]);
+            
+            const csvContent = [headers, ...rows]
+                .map(row => row.map(field => `"${field}"`).join(','))
+                .join('\n');
+            
+            return csvContent;
+        }
+        
+        // Hacer funciones globalmente accesibles
+        window.loadAllInvoices = loadAllInvoices;
+        window.toggleInvoiceSelection = toggleInvoiceSelection;
+        window.downloadInvoicePDF = downloadInvoicePDF;
+        }
+        
+        // ===== CLIENT SEARCH FUNCTIONALITY =====
+        
+        // Variables globales para búsqueda de clientes
+        let clientsData = [];
+        let selectedClient = null;
+        let clientDocuments = [];
+        let selectedDocuments = [];
+        
+        // Cargar datos de clientes al inicializar
+        async function loadClientsData() {
+            try {
+                const response = await fetch('/static/clientes_data.json');
+                if (response.ok) {
+                    clientsData = await response.json();
+                    console.log(`✅ Cargados ${clientsData.length} clientes`);
+                } else {
+                    console.error('❌ Error cargando datos de clientes');
+                }
+            } catch (error) {
+                console.error('❌ Error:', error);
+            }
+        }
+        
+        // Inicializar búsqueda de clientes
+        function initializeClientSearch() {
+            const searchInput = document.getElementById('client_search_input');
+            const idInput = document.getElementById('client_id_input');
+            const suggestionsDiv = document.getElementById('client_suggestions');
+            const searchBtn = document.getElementById('searchClientBtn');
+            const clearBtn = document.getElementById('clearClientSearchBtn');
+            const loadDocumentsBtn = document.getElementById('loadClientDocumentsBtn');
+            const loadInvoicesBtn = document.getElementById('loadClientInvoicesBtn');
+            
+            // Autocompletado de clientes
+            const debouncedSearch = debounce((query) => {
+                showClientSuggestions(query);
+            }, 300);
+            
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                if (query.length >= 2) {
+                    debouncedSearch(query);
+                } else {
+                    hideSuggestions();
+                }
+            });
+            
+            // Ocultar sugerencias al hacer clic fuera
+            document.addEventListener('click', (e) => {
+                if (!searchInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+                    hideSuggestions();
+                }
+            });
+            
+            // Búsqueda por ID
+            idInput.addEventListener('input', (e) => {
+                const id = parseInt(e.target.value);
+                if (id && !isNaN(id)) {
+                    const client = clientsData.find(c => c.customer_id === id);
+                    if (client) {
+                        searchInput.value = client.name;
+                        selectClient(client);
+                    }
+                }
+            });
+            
+            // Botones de acción
+            searchBtn.addEventListener('click', () => {
+                const query = searchInput.value.trim();
+                const id = parseInt(idInput.value);
+                
+                if (id && !isNaN(id)) {
+                    searchClientById(id);
+                } else if (query) {
+                    searchClientByName(query);
+                } else {
+                    showClientSearchMessage('error', 'Por favor, introduce un nombre o ID de cliente');
+                }
+            });
+            
+            clearBtn.addEventListener('click', clearClientSearch);
+            loadDocumentsBtn.addEventListener('click', () => loadClientDocuments('delivery_notes'));
+            loadInvoicesBtn.addEventListener('click', () => loadClientDocuments('invoices'));
+            
+            // Selección múltiple de documentos
+            const selectAllCheckbox = document.getElementById('selectAllDocuments');
+            selectAllCheckbox.addEventListener('change', toggleSelectAllDocuments);
+        }
+        
+        // Mostrar sugerencias de clientes
+        function showClientSuggestions(query) {
+            const suggestionsDiv = document.getElementById('client_suggestions');
+            const matches = clientsData.filter(client => 
+                client.name.toLowerCase().includes(query.toLowerCase())
+            ).slice(0, 10);
+            
+            if (matches.length === 0) {
+                hideSuggestions();
+                return;
+            }
+            
+            const html = matches.map(client => `
+                <div class="suggestion-item" onclick="selectClientFromSuggestion(${client.customer_id})">
+                    <span class="suggestion-name">${client.name}</span>
+                    <span class="suggestion-id">(ID: ${client.customer_id})</span>
+                </div>
+            `).join('');
+            
+            suggestionsDiv.innerHTML = html;
+            suggestionsDiv.style.display = 'block';
+        }
+        
+        // Ocultar sugerencias
+        function hideSuggestions() {
+            const suggestionsDiv = document.getElementById('client_suggestions');
+            suggestionsDiv.style.display = 'none';
+        }
+        
+        // Seleccionar cliente desde sugerencias
+        function selectClientFromSuggestion(clientId) {
+            const client = clientsData.find(c => c.customer_id === clientId);
+            if (client) {
+                document.getElementById('client_search_input').value = client.name;
+                document.getElementById('client_id_input').value = client.customer_id;
+                selectClient(client);
+                hideSuggestions();
+            }
+        }
+        
+        // Buscar cliente por ID
+        function searchClientById(id) {
+            const client = clientsData.find(c => c.customer_id === id);
+            if (client) {
+                selectClient(client);
+                showClientSearchMessage('success', `Cliente encontrado: ${client.name}`);
+            } else {
+                showClientSearchMessage('error', `No se encontró cliente con ID: ${id}`);
+            }
+        }
+        
+        // Buscar cliente por nombre
+        function searchClientByName(name) {
+            const client = clientsData.find(c => 
+                c.name.toLowerCase() === name.toLowerCase()
+            );
+            
+            if (client) {
+                selectClient(client);
+                showClientSearchMessage('success', `Cliente encontrado: ${client.name}`);
+            } else {
+                const matches = clientsData.filter(c => 
+                    c.name.toLowerCase().includes(name.toLowerCase())
+                );
+                
+                if (matches.length > 0) {
+                    showClientSearchMessage('info', `Se encontraron ${matches.length} coincidencias. Selecciona una de las sugerencias.`);
+                    showClientSuggestions(name);
+                } else {
+                    showClientSearchMessage('error', `No se encontró cliente con nombre: ${name}`);
+                }
+            }
+        }
+        
+        // Seleccionar cliente
+        function selectClient(client) {
+            selectedClient = client;
+            
+            // Actualizar información del cliente
+            document.getElementById('client_display_id').textContent = client.customer_id;
+            document.getElementById('client_display_name').textContent = client.name;
+            document.getElementById('client_display_email').textContent = client.email || 'No disponible';
+            
+            // Mostrar sección de información
+            document.getElementById('client_info_section').style.display = 'block';
+            
+            // Limpiar documentos anteriores
+            clearDocumentsTable();
+        }
+        
+        // Limpiar búsqueda de cliente
+        function clearClientSearch() {
+            document.getElementById('client_search_input').value = '';
+            document.getElementById('client_id_input').value = '';
+            document.getElementById('client_info_section').style.display = 'none';
+            document.getElementById('client_documents_section').style.display = 'none';
+            selectedClient = null;
+            clientDocuments = [];
+            selectedDocuments = [];
+            hideSuggestions();
+            hideClientSearchMessage();
+        }
+        
+        // Cargar documentos del cliente
+        async function loadClientDocuments(type = 'delivery_notes') {
+            if (!selectedClient) {
+                showClientSearchMessage('error', 'Selecciona un cliente primero');
+                return;
+            }
+            
+            showClientSearchMessage('info', 'Cargando documentos...');
+            
+            try {
+                // Simular llamada a GraphQL API
+                const documents = await fetchClientDocuments(selectedClient.customer_id, type);
+                
+                if (documents && documents.length > 0) {
+                    clientDocuments = documents;
+                    displayDocuments(documents);
+                    document.getElementById('client_documents_section').style.display = 'block';
+                    showClientSearchMessage('success', `Se cargaron ${documents.length} documentos`);
+                } else {
+                    clearDocumentsTable();
+                    showClientSearchMessage('info', 'No se encontraron documentos para este cliente');
+                }
+            } catch (error) {
+                console.error('Error cargando documentos:', error);
+                showClientSearchMessage('error', 'Error cargando documentos del cliente');
+            }
+        }
+        
+        // Simular llamada a GraphQL API (placeholder)
+        async function fetchClientDocuments(clientId, type) {
+            // Aquí iría la llamada real a GraphQL
+            // Por ahora, simular algunos documentos de ejemplo
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const mockDocuments = [
+                        {
+                            id: `${type}_001`,
+                            type: type === 'delivery_notes' ? 'Albarán' : 'Factura',
+                            number: `${type === 'delivery_notes' ? 'ALB' : 'FAC'}-2024-001`,
+                            date: '2024-07-10',
+                            reference: 'REF-001',
+                            amount: 1250.50,
+                            unique_id: `unique_${clientId}_001`
+                        },
+                        {
+                            id: `${type}_002`,
+                            type: type === 'delivery_notes' ? 'Albarán' : 'Factura',
+                            number: `${type === 'delivery_notes' ? 'ALB' : 'FAC'}-2024-002`,
+                            date: '2024-07-08',
+                            reference: 'REF-002',
+                            amount: 890.25,
+                            unique_id: `unique_${clientId}_002`
+                        }
+                    ];
+                    resolve(mockDocuments);
+                }, 1000);
+            });
+        }
+        
+        // Mostrar documentos en la tabla
+        function displayDocuments(documents) {
+            const tableBody = document.getElementById('documentsTableBody');
+            
+            if (!documents || documents.length === 0) {
+                tableBody.innerHTML = `
+                    <div class="empty-message">
+                        <i class="fas fa-file-alt"></i>
+                        <h3>Sin documentos</h3>
+                        <p>No se encontraron documentos para este cliente</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const html = documents.map(doc => `
+                <div class="document-row" data-doc-id="${doc.id}">
+                    <div class="col-select">
+                        <input type="checkbox" class="document-checkbox" value="${doc.id}" 
+                               onchange="toggleDocumentSelection('${doc.id}')">
+                    </div>
+                    <div class="col-type">${doc.type}</div>
+                    <div class="col-number">${doc.number}</div>
+                    <div class="col-date">${formatDate(doc.date)}</div>
+                    <div class="col-reference">${doc.reference}</div>
+                    <div class="col-amount">${formatCurrency(doc.amount)}</div>
+                    <div class="col-actions">
+                        <button class="btn-icon btn-download" onclick="downloadDocument('${doc.unique_id}')" 
+                                title="Descargar PDF">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            tableBody.innerHTML = html;
+        }
+        
+        // Limpiar tabla de documentos
+        function clearDocumentsTable() {
+            const tableBody = document.getElementById('documentsTableBody');
+            tableBody.innerHTML = `
+                <div class="empty-message">
+                    <i class="fas fa-file-alt"></i>
+                    <h3>Selecciona un cliente</h3>
+                    <p>Busca y selecciona un cliente para ver sus documentos</p>
+                </div>
+            `;
+            selectedDocuments = [];
+            updateDownloadButton();
+        }
+        
+        // Alternar selección de documento
+        function toggleDocumentSelection(docId) {
+            const checkbox = document.querySelector(`input[value="${docId}"]`);
+            const row = document.querySelector(`[data-doc-id="${docId}"]`);
+            
+            if (checkbox.checked) {
+                selectedDocuments.push(docId);
+                row.classList.add('selected');
+            } else {
+                selectedDocuments = selectedDocuments.filter(id => id !== docId);
+                row.classList.remove('selected');
+            }
+            
+            updateDownloadButton();
+            updateSelectAllCheckbox();
+        }
+        
+        // Alternar selección de todos los documentos
+        function toggleSelectAllDocuments() {
+            const selectAllCheckbox = document.getElementById('selectAllDocuments');
+            const documentCheckboxes = document.querySelectorAll('.document-checkbox');
+            
+            documentCheckboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+                toggleDocumentSelection(checkbox.value);
+            });
+        }
+        
+        // Actualizar checkbox de seleccionar todo
+        function updateSelectAllCheckbox() {
+            const selectAllCheckbox = document.getElementById('selectAllDocuments');
+            const documentCheckboxes = document.querySelectorAll('.document-checkbox');
+            const checkedBoxes = document.querySelectorAll('.document-checkbox:checked');
+            
+            if (documentCheckboxes.length === 0) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = false;
+            } else if (checkedBoxes.length === documentCheckboxes.length) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = true;
+            } else if (checkedBoxes.length > 0) {
+                selectAllCheckbox.indeterminate = true;
+            } else {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = false;
+            }
+        }
+        
+        // Actualizar botón de descarga
+        function updateDownloadButton() {
+            const downloadBtn = document.getElementById('downloadAllDocumentsBtn');
+            const count = selectedDocuments.length;
+            
+            downloadBtn.disabled = count === 0;
+            downloadBtn.innerHTML = `<i class="fas fa-download"></i> Descargar Seleccionados (${count})`;
+        }
+        
+        // Descargar documento individual
+        async function downloadDocument(uniqueId) {
+            showClientSearchMessage('info', 'Descargando documento...');
+            
+            try {
+                // Aquí iría la llamada real a la API de descarga
+                // Simular descarga
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                showClientSearchMessage('success', 'Documento descargado exitosamente');
+            } catch (error) {
+                console.error('Error descargando documento:', error);
+                showClientSearchMessage('error', 'Error descargando el documento');
+            }
+        }
+        
+        // Mostrar mensaje de búsqueda de cliente
+        function showClientSearchMessage(type, message) {
+            const resultDiv = document.getElementById('clientSearchResult');
+            resultDiv.className = `result-message ${type}`;
+            resultDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${message}`;
+            resultDiv.style.display = 'block';
+            
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    hideClientSearchMessage();
+                }, 3000);
+            }
+        }
+        
+        // Ocultar mensaje de búsqueda de cliente
+        function hideClientSearchMessage() {
+            const resultDiv = document.getElementById('clientSearchResult');
+            resultDiv.style.display = 'none';
+        }
+        
+        // Formatear fecha
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-ES');
+        }
+        
+        // Formatear moneda
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('es-ES', {
+                style: 'currency',
+                currency: 'EUR'
+            }).format(amount);
+        }
+        
+        // Modificar switchSection para incluir client-search
+        const originalSwitchSection = switchSection;
+        switchSection = function(sectionId) {
+            originalSwitchSection(sectionId);
+            
+            // Cargar datos de clientes cuando se accede a la sección
+            if (sectionId === 'client-search' && clientsData.length === 0) {
+                loadClientsData();
+            }
+        };
+        
+        // Inicializar búsqueda de clientes cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeClientSearch();
+        });
+        
+        // Hacer funciones globalmente accesibles
+        window.selectClientFromSuggestion = selectClientFromSuggestion;
+        window.toggleDocumentSelection = toggleDocumentSelection;
+        window.downloadDocument = downloadDocument;
+        
+        // Utility function: debounce        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Hacer funciones globalmente accesibles
+        window.changeQuantity = changeQuantity;
+        window.removeProductLine = removeProductLine;
+        window.updateLineTotal = updateLineTotal;
+    </script>
+</body>
+</html>
+
